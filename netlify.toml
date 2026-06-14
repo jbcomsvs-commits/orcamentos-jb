@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."claude"]
+  timeout = 26
+
+[[redirects]]
+  from = "/api/claude"
+  to = "/.netlify/functions/claude"
+  status = 200
+
+[[redirects]]
+  from = "/api/excel"
+  to = "/.netlify/functions/excel"
+  status = 200

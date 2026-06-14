@@ -1,0 +1,2847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engefal — Orçamentos</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23D97706'/><text x='16' y='22' font-family='Arial' font-weight='bold' font-size='11' fill='white' text-anchor='middle'>EGF</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#f5f4f0;--sur:#fff;--sur2:#f0efe9;--bor:#d8d6ce;--acc:#1a1a1a;--yel:#c8960a;--yli:#fdf3d0;--red:#c0392b;--grn:#27ae60;--txt:#1a1a1a;--mut:#888880;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
+.topnav{background:var(--acc);color:#fff;display:flex;align-items:center;padding:0 28px;height:50px;gap:24px;position:sticky;top:0;z-index:100}
+.brand{font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:2px;color:var(--yel)}
+.sep{width:1px;height:18px;background:#333}
+.tabs{display:flex;gap:2px}
+.tb{padding:5px 14px;border-radius:3px;border:none;background:transparent;color:#999;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;letter-spacing:.3px}
+.tb:hover{color:#fff}.tb.on{background:rgba(255,255,255,.12);color:#fff}
+.con{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+.sec{display:none}.sec.on{display:block}
+/* cards */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:6px;margin-bottom:14px}
+.ch{padding:12px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ct{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);font-family:var(--mono)}
+.cb{padding:18px}
+/* steps */
+.srow{display:flex;border:1px solid var(--bor);border-radius:6px;overflow:hidden;background:var(--sur);margin-bottom:20px}
+.si{flex:1;padding:10px;text-align:center;font-size:11px;font-weight:600;font-family:var(--mono);color:var(--mut);border-right:1px solid var(--bor);cursor:default}
+.si:last-child{border-right:none}.si.on{background:var(--acc);color:#fff}.si.dn{color:var(--grn);background:#f0faf4}
+/* forms */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--mut);font-family:var(--mono)}
+input,select,textarea{background:var(--sur);border:1px solid var(--bor);border-radius:4px;color:var(--txt);font-family:var(--mono);font-size:12px;padding:7px 9px;outline:none;transition:border-color .12s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+input.err{border-color:var(--red)}
+select option{background:#fff}
+/* grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+/* btns */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:4px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .12s;white-space:nowrap}
+.bd{background:var(--acc);color:#fff;border-color:var(--acc)}.bd:hover{background:#333}
+.bo{background:transparent;color:var(--txt);border-color:var(--bor)}.bo:hover{border-color:var(--acc)}
+.by{background:var(--yel);color:#fff;border-color:var(--yel)}.by:hover{background:#a87800}
+.br{background:transparent;color:var(--red);border-color:var(--red)}.br:hover{background:var(--red);color:#fff}
+.bg{background:var(--grn);color:#fff;border-color:var(--grn)}
+.bsm{padding:4px 9px;font-size:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+/* table */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono)}
+th{padding:7px 9px;background:var(--sur2);color:var(--mut);font-size:9px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--bor);text-align:left;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--bor);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--sur2)}
+/* tags */
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:600}
+.ty{background:var(--yli);color:#7a5c00;border:1px solid #e8cc80}
+.tg{background:#eafaf2;color:var(--grn);border:1px solid #a8dfc0}
+.tm{background:var(--sur2);color:var(--mut);border:1px solid var(--bor)}
+.tr2{background:#fdf0ee;color:var(--red);border:1px solid #f0b8b0}
+/* upload zone */
+.uz{border:2px dashed var(--bor);border-radius:6px;padding:32px;text-align:center;cursor:pointer;transition:all .15s;background:var(--sur2)}
+.uz:hover,.uz.drag{border-color:var(--acc);background:#fff}
+.ui{font-size:28px;margin-bottom:8px}
+.ut{font-weight:600;margin-bottom:3px;font-size:14px}
+.us{color:var(--mut);font-size:11px;font-family:var(--mono)}
+/* chips */
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:6px 13px;border-radius:4px;border:1px solid var(--bor);cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:500;transition:all .12s;background:#fff;color:var(--mut);user-select:none}
+.chip.on{border-color:var(--acc);color:var(--acc);background:#f0f0f0;font-weight:600}
+.chip:hover:not(.on){border-color:#999;color:var(--txt)}
+/* totals */
+.trow{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--sur2);border-radius:4px;border:1px solid var(--bor);margin-bottom:12px}
+.tl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--mut);font-family:var(--mono)}
+.tv{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--acc)}
+/* alerts */
+.al{padding:10px 13px;border-radius:4px;font-size:12px;font-family:var(--mono);margin-bottom:12px}
+.ai{background:var(--yli);border:1px solid #e8cc80;color:#7a5c00}
+.aok{background:#eafaf2;border:1px solid #a8dfc0;color:var(--grn)}
+.aerr{background:#fdf0ee;border:1px solid #f0b8b0;color:var(--red)}
+.awk{background:#fff3e0;border:1px solid #ffcc80;color:#e65100}
+/* spinner */
+.spw{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px}
+.sp{width:24px;height:24px;border:2px solid var(--bor);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* toast */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 16px;border-radius:7px;font-size:12px;font-family:var(--mono);max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.4);animation:toastIn .2s ease;pointer-events:auto}
+.toast.ok{background:var(--grn);color:#fff}
+.toast.err{background:var(--red);color:#fff}
+.toast.info{background:var(--sur2);color:var(--txt);border:1px solid var(--bor)}
+.toast.warn{background:#b45309;color:#fff}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* cnae */
+.cblock{border:1px solid var(--bor);border-radius:6px;padding:12px;margin-bottom:8px;background:#fff}
+.chd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ccode{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--red);background:#fdf0ee;border:1px solid #f0b8b0;padding:2px 7px;border-radius:3px}
+.srow2{display:grid;grid-template-columns:1fr 130px 32px;gap:6px;margin-bottom:6px;align-items:center}
+/* pdf cards */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px}
+.pcard{border:1px solid var(--bor);border-radius:6px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:8px}
+/* modal */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:8px;padding:22px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+.mhd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.mtitle{font-size:15px;font-weight:700}
+.xbtn{background:none;border:none;font-size:17px;cursor:pointer;color:var(--mut);padding:3px}
+.xbtn:hover{color:var(--txt)}
+/* cliente list */
+.cli{padding:9px 13px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--bor)}
+.cli:last-child{border-bottom:none}.cli:hover{background:var(--sur2)}
+.clname{font-weight:600;font-size:12px}
+.clsub{font-size:10px;color:var(--mut);font-family:var(--mono);margin-top:1px}
+/* modo cards */
+.mcard{border:1px solid var(--bor);border-radius:6px;padding:18px;cursor:pointer;text-align:center;transition:border-color .12s}
+.mcard:hover{border-color:var(--acc)}
+/* processos */
+.proc-item{border:1px solid var(--bor);border-radius:6px;background:#fff;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .12s}
+.proc-item:hover{border-color:var(--acc)}
+.proc-nf{font-family:var(--mono);font-weight:700;font-size:14px;min-width:80px}
+.proc-info{flex:1}
+.proc-escola{font-weight:600;font-size:13px}
+.proc-meta{font-size:11px;color:var(--mut);font-family:var(--mono);margin-top:2px}
+/* validation */
+.vbox{background:#fdf0ee;border:1px solid #f0b8b0;border-radius:6px;padding:12px 16px;margin-bottom:14px}
+.vbox-title{font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:var(--mono)}
+.vline{font-size:12px;color:var(--red);font-family:var(--mono);margin-bottom:4px}
+/* assinatura */
+.assrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+/* utils */
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.jb{justify-content:space-between}.ac{align-items:center}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.mono{font-family:var(--mono)}.mut{color:var(--mut);font-size:11px;font-family:var(--mono)}
+.bold{font-weight:700}.w100{width:100%}
+.sbar{position:fixed;bottom:0;left:0;right:0;background:var(--acc);color:#777;padding:5px 28px;font-family:var(--mono);font-size:10px;display:flex;gap:16px;z-index:200}
+.sbar span{color:var(--yel)}
+</style>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-vj1K9r23iact1R2gfvKPDFe4baeIN94",
+    authDomain: "orcamentosjb-9b0ac.firebaseapp.com",
+    projectId: "orcamentosjb-9b0ac",
+    storageBucket: "orcamentosjb-9b0ac.firebasestorage.app",
+    messagingSenderId: "630957297755",
+    appId: "1:630957297755:web:fd9cc719ebb73662df2f7e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Expor funções de auth globalmente
+  window.AUTH = {
+    async login(email, password) {
+      await signInWithEmailAndPassword(auth, email, password);
+    },
+    async logout() {
+      await signOut(auth);
+    }
+  };
+
+  window.FS = {
+    async salvarProc(proc) {
+      const id = String(proc.id || Date.now());
+      await setDoc(doc(db, 'processos', id), { ...proc, id });
+    },
+    async deletarProc(id) {
+      await deleteDoc(doc(db, 'processos', String(id)));
+    },
+    async carregarProcs() {
+      const snap = await getDocs(query(collection(db, 'processos'), orderBy('savedAt', 'desc')));
+      return snap.docs.map(d => d.data());
+    },
+    async salvarCliente(c) {
+      const id = String(c.id || Date.now());
+      await setDoc(doc(db, 'clientes', id), { ...c, id });
+    },
+    async deletarCliente(id) {
+      await deleteDoc(doc(db, 'clientes', String(id)));
+    },
+    async carregarClientes() {
+      const snap = await getDocs(collection(db, 'clientes'));
+      return snap.docs.map(d => d.data());
+    },
+    async salvarCfg(cfg) {
+      await setDoc(doc(db, 'config', 'engefal'), cfg);
+    },
+    async carregarCfg() {
+      const snap = await getDoc(doc(db, 'config', 'engefal'));
+      return snap.exists() ? snap.data() : null;
+    },
+    async getOnum() {
+      const snap = await getDoc(doc(db, 'config', 'onum'));
+      return snap.exists() ? (snap.data().seq || 0) : 0;
+    },
+    async incOnum() {
+      const snap = await getDoc(doc(db, 'config', 'onum'));
+      const n = snap.exists() ? (snap.data().seq || 0) + 1 : 1;
+      await setDoc(doc(db, 'config', 'onum'), { seq: n });
+      return n;
+    },
+    // Materiais
+    async carregarMateriais() {
+      const snap = await getDocs(collection(db, 'materiais'));
+      return snap.docs.map(d => d.data());
+    },
+    async salvarMaterial(m) {
+      await setDoc(doc(db, 'materiais', String(m.codigo)), m);
+    },
+    async getMaterial(codigo) {
+      const snap = await getDoc(doc(db, 'materiais', String(codigo)));
+      return snap.exists() ? snap.data() : null;
+    },
+  };
+
+  // Controle de autenticação — só inicializa o app se logado
+  let tries = 0;
+  const waitAndInit = async () => {
+    while(typeof initApp === 'undefined' && tries < 100) {
+      await new Promise(r => setTimeout(r, 50));
+      tries++;
+    }
+    if(typeof initApp === 'function') initApp();
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Usuário logado — esconder login e mostrar app
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-root').style.display = 'block';
+      document.getElementById('logout-btn').style.display = 'flex';
+      document.getElementById('user-email').textContent = user.email;
+      waitAndInit();
+    } else {
+      // Não logado — mostrar tela de login
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-root').style.display = 'none';
+      document.getElementById('logout-btn').style.display = 'none';
+    }
+  });
+</script>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- TELA DE LOGIN -->
+<div id="login-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
+  <div style="background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:40px;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:22px;font-weight:800;color:var(--acc);letter-spacing:2px;font-family:var(--mono)">ENGEFAL</div>
+      <div style="font-size:11px;color:var(--mut);margin-top:4px;font-family:var(--mono)">Orçamentos</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:10px;font-weight:600;color:var(--mut);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px">E-mail</label>
+        <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;margin-top:4px;padding:10px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:6px;color:var(--txt);font-size:13px;box-sizing:border-box" onkeydown="if(event.key==='Enter')fazerLogin()">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:600;color:var(--mut);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px">Senha</label>
+        <input id="login-senha" type="password" placeholder="••••••••" style="width:100%;margin-top:4px;padding:10px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:6px;color:var(--txt);font-size:13px;box-sizing:border-box" onkeydown="if(event.key==='Enter')fazerLogin()">
+      </div>
+      <div id="login-erro" style="display:none;color:var(--red);font-size:12px;font-family:var(--mono)"></div>
+      <button onclick="fazerLogin()" id="login-btn" style="margin-top:8px;padding:11px;background:var(--acc);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--mono)">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP PRINCIPAL -->
+<div id="app-root" style="display:none">
+
+<div class="topnav">
+  <div class="brand">ENGEFAL</div>
+  <div class="sep"></div>
+  <div class="tabs">
+    <button class="tb on" onclick="goSec('danfe',this)">DANFE</button>
+    <button class="tb" onclick="goSec('nfserv',this)">NF Serviço</button>
+    <button class="tb" onclick="goSec('processos',this)">Processos</button>
+    <button class="tb" onclick="goSec('clientes',this)">Clientes</button>
+    <button class="tb" onclick="goSec('cfg',this)">Config</button>
+  </div>
+  <div id="logout-btn" style="display:none;align-items:center;gap:10px;margin-left:auto;padding-right:12px">
+    <span id="user-email" style="font-size:10px;color:var(--mut);font-family:var(--mono)"></span>
+    <button onclick="fazerLogout()" style="font-size:10px;padding:4px 10px;background:transparent;border:1px solid var(--bor);color:var(--mut);border-radius:4px;cursor:pointer;font-family:var(--mono)">Sair</button>
+  </div>
+</div>
+
+<div class="con">
+
+<!-- ========== DANFE ========== -->
+<!-- ========== DANFE ========== -->
+<div class="sec on" id="sec-danfe">
+  <!-- Steps -->
+  <div class="srow" id="ds-steps">
+    <div class="si on" id="ds1">1. Orçamento</div>
+    <div class="si" id="ds2">2. Variações</div>
+    <div class="si" id="ds3">3. NF + Gerar</div>
+  </div>
+
+  <!-- DS1: 5 BLOCOS -->
+  <div id="ds-1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);letter-spacing:1px">DANFE — Material</div>
+      <button class="btn bo bsm" onclick="resetDanfe()">↺ Limpar</button>
+    </div>
+
+    <!-- BLOCO 0: EMPRESA VENCEDORA -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--grn)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--grn);color:#fff;padding:2px 7px;border-radius:3px">00</span>
+          <div class="ct">Empresa vencedora</div>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="chips" id="d-winner-chips">
+          <div class="chip on" data-id="EGF" onclick="selecionarVencedora(this,'d')">Engefal</div>
+          <div class="chip" data-id="RPL" onclick="selecionarVencedora(this,'d')">RPL — Rosângela</div>
+          <div class="chip" data-id="JB" onclick="selecionarVencedora(this,'d')">JB — João Batista</div>
+          <div class="chip" data-id="Estrela" onclick="selecionarVencedora(this,'d')">Estrela</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 1: CLIENTE -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--acc)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--acc);background:var(--acc);color:#fff;padding:2px 7px;border-radius:3px">01</span>
+          <div class="ct">Cliente</div>
+        </div>
+        <button class="btn bo bsm" onclick="openCliModal('d')">🔍 Buscar cliente</button>
+      </div>
+      <div class="cb" style="padding:14px 18px">
+        <div id="d-cli-disp"><div class="mut" style="font-style:italic">Nenhum cliente selecionado. Clique em "Buscar cliente".</div></div>
+      </div>
+    </div>
+
+    <!-- BLOCO 2: DADOS DO ORÇAMENTO -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--yel)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--yel);color:#fff;padding:2px 7px;border-radius:3px">02</span>
+          <div class="ct">Dados do orçamento</div>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="g2" style="margin-bottom:12px">
+          <div class="field"><label>Nº Orçamento <span class="mut" style="font-weight:400">(auto)</span></label><input id="d-onum" placeholder="00163"></div>
+          <div class="field"><label id="d-odata-label">Data do orçamento (Engefal)</label><input id="d-odata" type="date"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Data concorrente 1 <span class="mut" style="font-weight:400">(opcional)</span></label><input id="d-odata-c1" type="date"></div>
+          <div class="field"><label>Data concorrente 2 <span class="mut" style="font-weight:400">(opcional)</span></label><input id="d-odata-c2" type="date"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3: DADOS DA NOTA FISCAL -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--grn)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--grn);color:#fff;padding:2px 7px;border-radius:3px">03</span>
+          <div class="ct">Nota fiscal</div>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="g2">
+          <div class="field"><label>Nº da Nota Fiscal</label><input id="d-nfnum" placeholder="NF-001234" oninput="dValidate()"></div>
+          <div class="field"><label>Data de emissão da NF</label><input id="d-nfdata" type="date" oninput="dValidate()"></div>
+        </div>
+        <div id="d-val-errs-inline" style="margin-top:8px"></div>
+        <div class="al ai" style="font-size:11px;padding:8px 12px;margin-top:8px">📌 Validade: <strong>60 dias</strong> · Pagamento: <strong>A vista</strong> · Assinatura: <strong>Felipe Gomes</strong></div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4: MATERIAIS -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid #6c63ff">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:#6c63ff;color:#fff;padding:2px 7px;border-radius:3px">04</span>
+          <div class="ct">Materiais</div>
+        </div>
+        <div class="flex gap8 ac">
+          <button class="btn bo bsm" onclick="dModo('upload')">📄 Upload PDF</button>
+          <div style="position:relative">
+            <input id="d-busca-mat" type="text" placeholder="Buscar por descrição..." style="width:180px" oninput="buscarMat(this.value)">
+            <div id="d-mat-sugest" style="display:none;position:absolute;top:100%;left:0;width:380px;background:#fff;border:1px solid var(--bor);border-radius:4px;z-index:200;max-height:260px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
+          </div>
+          <input id="d-cod" type="text" placeholder="Código" style="width:90px" onkeydown="if(event.key==='Enter')dAddItem()">
+          <input id="d-qtd" type="number" value="1" min="0.01" step="0.01" style="width:60px" onkeydown="if(event.key==='Enter')dAddItem()">
+          <button class="btn bo bsm" onclick="dAddItem()">+ Add</button>
+        </div>
+      </div>
+      <div id="dm-upload" style="display:none;padding:12px 18px">
+        <div class="uz" id="d-dz" onclick="document.getElementById('d-file').click()">
+          <div class="ui">📄</div><div class="ut">Arraste o PDF ou clique para selecionar</div>
+          <div class="us">Rascunho gerado pelo seu Excel</div>
+        </div>
+        <input type="file" id="d-file" accept=".pdf" style="display:none" onchange="uploadDanfe(this)">
+        <div id="d-parse-st" style="display:none" class="mt12"><div class="spw"><div class="sp"></div><div class="mut" id="d-parse-msg">Lendo PDF...</div></div></div>
+        <button class="btn bo bsm" style="margin-top:8px" onclick="dModo(null)">← Fechar</button>
+      </div>
+      <div class="cb" style="padding:0">
+        <div id="d-empty" class="mut" style="padding:18px;text-align:center;font-style:italic">Nenhum item. Digite código + Enter, busque por descrição ou faça upload de PDF.</div>
+        <div class="tw" id="d-tw" style="display:none">
+          <table><thead><tr><th>Cód</th><th>Descrição</th><th>Qtd</th><th>Und</th><th>NCM</th><th>Vl.Unit</th><th>Total</th><th></th></tr></thead>
+          <tbody id="d-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="trow" style="margin-bottom:12px"><div class="tl">Total material</div><div class="tv" id="d-total">R$ 0,00</div></div>
+
+    <!-- BLOCO 5: CONCORRENTES -->
+    <div class="card" style="margin-bottom:16px;border-left:3px solid var(--red)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--red);color:#fff;padding:2px 7px;border-radius:3px">05</span>
+          <div class="ct">Concorrentes</div>
+        </div>
+        <div class="mut" id="d-chip-h" style="font-size:11px">Selecione exatamente 2</div>
+      </div>
+      <div class="cb">
+        <div class="chips" id="d-chips">
+          <div class="chip" data-id="EGF" onclick="toggleChip(this,'d')" style="display:none">Engefal</div>
+          <div class="chip" data-id="JB" onclick="toggleChip(this,'d')">JB — João Batista</div>
+          <div class="chip" data-id="LC4" onclick="toggleChip(this,'d')">L.C 4R — Luis Carlos</div>
+          <div class="chip" data-id="MF" onclick="toggleChip(this,'d')">MF Construção</div>
+          <div class="chip" data-id="RPL" onclick="toggleChip(this,'d')">RPL — Rosângela</div>
+          <div class="chip" data-id="WB" onclick="toggleChip(this,'d')">W.B. — Wilson Bispo</div>
+          <div class="chip" data-id="WR" onclick="toggleChip(this,'d')">W.R. — Wellington</div>
+          <div class="chip" data-id="Estrela" onclick="toggleChip(this,'d')">Estrela — João Batista</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap8 jb">
+      <div></div>
+      <button class="btn bd" onclick="dsIrVariacoes()">Gerar Variações →</button>
+    </div>
+  </div>
+
+  <!-- DS2: VARIAÇÕES -->
+  <div id="ds-2" style="display:none">
+    <div id="d-vars-loading" style="display:none">
+      <div class="spw"><div class="sp"></div><div class="mut" id="d-vars-msg">IA gerando variações...</div></div>
+    </div>
+    <div id="d-vars-content" style="display:none">
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Variações de descrição</div>
+          <div class="mut" style="font-size:10px">Edite as descrições antes de gerar os arquivos</div>
+        </div>
+        <div class="cb" style="padding:0">
+          <div class="tw">
+            <table id="d-vars-table">
+              <thead id="d-vars-thead"></thead>
+              <tbody id="d-vars-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap8 jb" style="margin-top:12px">
+        <button class="btn bo" onclick="dsGo(1)">← Voltar</button>
+        <button class="btn bd" onclick="dsGo(3)">Próximo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DS3: GERAR -->
+  <div id="ds-3" style="display:none">
+    <div class="card"><div class="ch"><div class="ct">Resumo</div></div>
+      <div class="cb">
+        <div id="d-val-errs"></div>
+        <div id="d-resumo" class="mt12"></div>
+        <div class="trow mt8"><div class="tl">Total material</div><div class="tv" id="d-total-fin">R$ 0,00</div></div>
+      </div></div>
+    <div class="flex gap8 jb" style="margin-bottom:8px"><button class="btn bo" onclick="dsGo(2)">← Voltar</button><button class="btn bd" onclick="salvarProcManual('danfe')" id="d-btn-salvar">💾 Salvar processo</button></div>
+    <div id="d-gen-area"><div class="flex gap8 jb"><button class="btn bo" onclick="resetDanfe()">↺ Novo processo</button><div class="flex gap8"><button class="btn by" onclick="abrirDocumentosEmpresa('d')">📄 Documentos</button><button class="btn bg" onclick="gerarExcelDanfe()">⬇ Baixar Excel</button></div></div></div>
+    <div id="d-loading" style="display:none"><div class="spw"><div class="sp"></div><div class="mut" id="d-load-msg">Gerando...</div></div></div>
+  </div>
+</div>
+
+<!-- ========== NF SERVIÇO ========== -->
+<div class="sec" id="sec-nfserv">
+  <div class="srow">
+    <div class="si on" id="ns1">1. Orçamento</div>
+    <div class="si" id="ns2">2. Variações</div>
+    <div class="si" id="ns3">3. NF + Gerar</div>
+  </div>
+
+  <!-- NS1: 5 BLOCOS -->
+  <div id="ns-1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;font-family:var(--mono);letter-spacing:1px">NF Serviço — Mão de obra</div>
+      <button class="btn bo bsm" onclick="resetNF()">↺ Limpar</button>
+    </div>
+
+    <!-- BLOCO 0: EMPRESA VENCEDORA -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--grn)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--grn);color:#fff;padding:2px 7px;border-radius:3px">00</span>
+          <div class="ct">Empresa vencedora</div>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="chips" id="n-winner-chips">
+          <div class="chip on" data-id="EGF" onclick="selecionarVencedora(this,'n')">Engefal</div>
+          <div class="chip" data-id="RPL" onclick="selecionarVencedora(this,'n')">RPL — Rosângela</div>
+          <div class="chip" data-id="JB" onclick="selecionarVencedora(this,'n')">JB — João Batista</div>
+          <div class="chip" data-id="Estrela" onclick="selecionarVencedora(this,'n')">Estrela</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 1: CLIENTE -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--acc)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--acc);color:#fff;padding:2px 7px;border-radius:3px">01</span>
+          <div class="ct">Cliente</div>
+        </div>
+        <button class="btn bo bsm" onclick="openCliModal('n')">🔍 Buscar cliente</button>
+      </div>
+      <div class="cb" style="padding:14px 18px">
+        <div id="n-cli-disp"><div class="mut" style="font-style:italic">Nenhum cliente selecionado. Clique em "Buscar cliente".</div></div>
+      </div>
+    </div>
+
+    <!-- BLOCO 2: DADOS DO ORÇAMENTO -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--yel)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--yel);color:#fff;padding:2px 7px;border-radius:3px">02</span>
+          <div class="ct">Dados do orçamento</div>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="g2" style="margin-bottom:12px">
+          <div class="field"><label>Nº Orçamento <span class="mut" style="font-weight:400">(auto)</span></label><input id="n-onum" placeholder="00163"></div>
+          <div class="field"><label id="n-odata-label">Data do orçamento (Engefal)</label><input id="n-odata" type="date"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Data concorrente 1 <span class="mut" style="font-weight:400">(opcional)</span></label><input id="n-odata-c1" type="date"></div>
+          <div class="field"><label>Data concorrente 2 <span class="mut" style="font-weight:400">(opcional)</span></label><input id="n-odata-c2" type="date"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3: NOTA FISCAL -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--grn)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--grn);color:#fff;padding:2px 7px;border-radius:3px">03</span>
+          <div class="ct">Nota fiscal</div>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="g2">
+          <div class="field"><label>Nº da Nota Fiscal</label><input id="n-nfnum" placeholder="NF-001234" oninput="nValidate()"></div>
+          <div class="field"><label>Data de emissão da NF</label><input id="n-nfdata" type="date" oninput="nValidate()"></div>
+        </div>
+        <div id="n-val-errs-inline" style="margin-top:8px"></div>
+        <div class="al ai" style="font-size:11px;padding:8px 12px;margin-top:8px">📌 Validade: <strong>60 dias</strong> · Pagamento: <strong>A vista</strong> · Assinatura: <strong>Felipe Gomes</strong></div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4: SERVIÇOS -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid #6c63ff">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:#6c63ff;color:#fff;padding:2px 7px;border-radius:3px">04</span>
+          <div class="ct">Serviços</div>
+        </div>
+        <div class="flex gap8 ac">
+          <button class="btn bo bsm" onclick="nModo('upload')">📄 Upload PDF</button>
+          <button class="btn bo bsm" onclick="nAddItem()">+ Item</button>
+        </div>
+      </div>
+      <div id="nm-upload" style="display:none;padding:12px 18px">
+        <div class="uz" id="n-dz" onclick="document.getElementById('n-file').click()">
+          <div class="ui">📄</div><div class="ut">Arraste o PDF ou clique para selecionar</div>
+          <div class="us">A IA extrairá automaticamente os itens e valores do rascunho</div>
+        </div>
+        <input type="file" id="n-file" accept=".pdf" style="display:none" onchange="uploadNF(this)">
+        <div id="n-parse-st" style="display:none" class="mt12"><div class="spw"><div class="sp"></div><div class="mut" id="n-parse-msg">Lendo PDF...</div></div></div>
+        <button class="btn bo bsm" style="margin-top:8px" onclick="nModo(null)">← Fechar</button>
+      </div>
+      <div class="cb" style="padding:0">
+        <div id="n-svc-empty" class="mut" style="padding:16px;text-align:center;font-style:italic">Nenhum item. Clique em "+ Item" ou faça upload de PDF.</div>
+        <div class="tw" id="n-svc-tw" style="display:none">
+          <table>
+            <thead><tr><th>Cód</th><th>Qtd</th><th>Und</th><th>Descrição</th><th>Vl. unitário</th><th>Total</th><th></th></tr></thead>
+            <tbody id="n-svc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="trow" style="margin-bottom:12px"><div class="tl">Total serviços</div><div class="tv" id="n-total">R$ 0,00</div></div>
+
+    <!-- BLOCO 5: CONCORRENTES -->
+    <div class="card" style="margin-bottom:16px;border-left:3px solid var(--red)">
+      <div class="ch" style="background:var(--sur2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;background:var(--red);color:#fff;padding:2px 7px;border-radius:3px">05</span>
+          <div class="ct">Concorrentes</div>
+        </div>
+        <div class="mut" id="n-chip-h" style="font-size:11px">Selecione exatamente 2</div>
+      </div>
+      <div class="cb">
+        <div class="chips" id="n-chips">
+          <div class="chip" data-id="EGF" onclick="toggleChip(this,'n')" style="display:none">Engefal</div>
+          <div class="chip" data-id="JB" onclick="toggleChip(this,'n')">JB — João Batista</div>
+          <div class="chip" data-id="LC4" onclick="toggleChip(this,'n')">L.C 4R — Luis Carlos</div>
+          <div class="chip" data-id="MF" onclick="toggleChip(this,'n')">MF Construção</div>
+          <div class="chip" data-id="RPL" onclick="toggleChip(this,'n')">RPL — Rosângela</div>
+          <div class="chip" data-id="WB" onclick="toggleChip(this,'n')">W.B. — Wilson Bispo</div>
+          <div class="chip" data-id="WR" onclick="toggleChip(this,'n')">W.R. — Wellington</div>
+          <div class="chip" data-id="Estrela" onclick="toggleChip(this,'n')">Estrela — João Batista</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap8 jb">
+      <div></div>
+      <button class="btn bd" onclick="nsIrVariacoes()">Gerar Variações →</button>
+    </div>
+  </div>
+
+  <!-- NS2: VARIAÇÕES -->
+  <div id="ns-2" style="display:none">
+    <div id="n-vars-loading" style="display:none">
+      <div class="spw"><div class="sp"></div><div class="mut" id="n-vars-msg">IA gerando variações...</div></div>
+    </div>
+    <div id="n-vars-content" style="display:none">
+      <div class="card">
+        <div class="ch">
+          <div class="ct">Variações de descrição</div>
+          <div class="mut" style="font-size:10px">Edite as descrições antes de gerar os arquivos</div>
+        </div>
+        <div class="cb" style="padding:0">
+          <div class="tw">
+            <table id="n-vars-table">
+              <thead id="n-vars-thead"></thead>
+              <tbody id="n-vars-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap8 jb" style="margin-top:12px">
+        <button class="btn bo" onclick="nsGo(1)">← Voltar</button>
+        <button class="btn bd" onclick="nsGo(3)">Próximo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NS3: GERAR -->
+  <div id="ns-3" style="display:none">
+    <div class="card"><div class="ch"><div class="ct">Resumo</div></div>
+      <div class="cb">
+        <div id="n-val-errs"></div>
+        <div id="n-resumo" class="mt12"></div>
+        <div class="trow mt8"><div class="tl">Total serviços</div><div class="tv" id="n-total-fin">R$ 0,00</div></div>
+      </div></div>
+    <div class="flex gap8 jb" style="margin-bottom:8px"><button class="btn bo" onclick="nsGo(2)">← Voltar</button><button class="btn bd" onclick="salvarProcManual('nfserv')" id="n-btn-salvar">💾 Salvar processo</button></div>
+    <div id="n-gen-area"><div class="flex gap8 jb"><button class="btn bo" onclick="resetNF()">↺ Novo processo</button><div class="flex gap8"><button class="btn by" onclick="abrirDocumentosEmpresa('n')">📄 Documentos</button><button class="btn bg" onclick="gerarExcelNF()">⬇ Baixar Excel</button></div></div></div>
+    <div id="n-loading" style="display:none"><div class="spw"><div class="sp"></div><div class="mut" id="n-load-msg">Gerando...</div></div></div>
+  </div>
+</div>
+
+<!-- ========== PROCESSOS ========== -->
+<div class="sec" id="sec-processos">
+  <div class="flex gap8 jb mb16 ac">
+    <div style="font-size:18px;font-weight:700">Processos</div>
+    <input type="text" placeholder="Buscar por NF, escola, orc., concorrente..." style="width:260px" oninput="filtrarProc(this.value)">
+  </div>
+  <div id="proc-lista"><div class="mut" style="padding:24px 0;text-align:center">Nenhum processo salvo.</div></div>
+</div>
+
+<!-- ========== CLIENTES ========== -->
+<div class="sec" id="sec-clientes">
+  <div class="card">
+    <div class="ch"><div class="ct">Clientes</div>
+      <div class="flex gap8 ac">
+        <input type="text" placeholder="Buscar por escola, CNPJ, contato..." style="width:260px" oninput="filtrarCli(this.value)">
+        <button class="btn bo bsm" onclick="openNovoCliente()">+ Novo</button>
+      </div></div>
+    <div class="cb" style="padding:0"><div class="tw">
+      <table><thead><tr><th>Escola</th><th>Responsável</th><th>CNPJ</th><th>Contato</th><th>Ativo</th><th></th></tr></thead>
+      <tbody id="cli-tbody"></tbody></table>
+    </div></div>
+  </div>
+</div>
+
+<!-- ========== CONFIG ========== -->
+<div class="sec" id="sec-cfg">
+  <!-- Dados da Engefal -->
+  <div class="card" style="margin-bottom:14px"><div class="ch"><div class="ct">Dados da Engefal</div></div>
+    <div class="cb">
+      <div class="g2 mb12">
+        <div class="field"><label>Razão social</label><input id="cfg-razao" value="ENGEFAL EMPREITEIA E SERVIÇOS LTDA"></div>
+        <div class="field"><label>CNPJ</label><input id="cfg-cnpj" value="47.445.303/0001-81"></div>
+      </div>
+      <div class="g2 mb12">
+        <div class="field"><label>Endereço</label><input id="cfg-end" value="R. do Iverno, 258 - Jd. Guarani"></div>
+        <div class="field"><label>CEP</label><input id="cfg-cep" value="02848-050"></div>
+      </div>
+      <div class="g2 mb12">
+        <div class="field"><label>Contato 1 — nome</label><input id="cfg-c1n" value="Felipe Gomes"></div>
+        <div class="field"><label>Contato 1 — tel</label><input id="cfg-c1t" value="(11) 98151-8920"></div>
+      </div>
+      <div class="g2 mb12">
+        <div class="field"><label>Contato 2 — nome</label><input id="cfg-c2n" value="Leonardo Braulino"></div>
+        <div class="field"><label>Contato 2 — tel</label><input id="cfg-c2t" value="(11) 96928-6036"></div>
+      </div>
+      <button class="btn bd" onclick="saveCfg()">Salvar</button>
+    </div></div>
+
+  <!-- Backup -->
+  <div class="card">
+    <div class="ch"><div class="ct">Backup de dados</div></div>
+    <div class="cb">
+      <p style="font-size:12px;color:var(--mut);font-family:var(--mono);margin-bottom:16px">
+        Exporte todos os dados (processos, clientes, materiais) para um arquivo JSON.<br>
+        Para restaurar, importe o arquivo gerado anteriormente.
+      </p>
+      <div class="flex gap8">
+        <button class="btn bd" onclick="exportarBackup()">⬇ Exportar backup</button>
+        <button class="btn bo" onclick="document.getElementById('backup-file').click()">⬆ Importar backup</button>
+        <input type="file" id="backup-file" accept=".json" style="display:none" onchange="importarBackup(this)">
+      </div>
+      <div id="backup-status" style="margin-top:12px;font-size:12px;font-family:var(--mono)"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /con -->
+
+<div class="sbar"><span id="sb-proc">0 processos</span> · <span id="sb-cli">0 clientes</span></div>
+
+<!-- MODAIS -->
+<div class="ov" id="ov-cli"><div class="modal" style="max-width:620px">
+  <div class="mhd"><div class="mtitle">Selecionar cliente</div><button class="xbtn" onclick="closeOv('ov-cli')">✕</button></div>
+  <input type="text" placeholder="Buscar..." style="margin-bottom:12px" oninput="filtrarCliModal(this.value)" id="cli-modal-busca">
+  <div id="cli-modal-lista" style="max-height:380px;overflow-y:auto;border:1px solid var(--bor);border-radius:4px"></div>
+</div></div>
+
+<div class="ov" id="ov-novo-cli"><div class="modal">
+  <div class="mhd"><div class="mtitle" id="nc-title">Novo cliente</div><button class="xbtn" onclick="closeOv('ov-novo-cli')">✕</button></div>
+  <div class="g2 mb12">
+    <div class="field"><label>Nome completo (responsável)</label><input id="nc-nome"></div>
+    <div class="field"><label>Nome curto (escola)</label><input id="nc-nome2"></div>
+  </div>
+  <div class="g2 mb12">
+    <div class="field"><label>CNPJ</label><input id="nc-cnpj"></div>
+    <div class="field"><label>Contato</label><input id="nc-cont"></div>
+  </div>
+  <div class="g2 mb12">
+    <div class="field"><label>Endereço</label><input id="nc-end"></div>
+    <div class="field"><label>Telefone</label><input id="nc-tel"></div>
+  </div>
+  <div class="field mb12"><label>E-mail</label><input id="nc-email"></div>
+  <div class="flex gap8 jb">
+    <button class="btn br bsm" id="nc-del" onclick="delCliente()" style="display:none">Excluir</button>
+    <div class="flex gap8"><button class="btn bo" onclick="closeOv('ov-novo-cli')">Cancelar</button><button class="btn bd" onclick="saveCliente()">Salvar</button></div>
+  </div>
+</div></div>
+
+<div class="ov" id="ov-cnae"><div class="modal" style="max-width:420px">
+  <div class="mhd"><div class="mtitle">Adicionar CNAE</div><button class="xbtn" onclick="closeOv('ov-cnae')">✕</button></div>
+  <div class="field mb12"><label>Código CNAE</label><input id="cnae-cod" placeholder="1058"></div>
+  <div class="field mb12"><label>Descrição resumida</label><input id="cnae-desc" placeholder="Manutenção hidráulica"></div>
+  <div class="flex gap8 jb"><button class="btn bo" onclick="closeOv('ov-cnae')">Cancelar</button><button class="btn bd" onclick="confCnae()">Adicionar</button></div>
+</div></div>
+
+<div class="ov" id="ov-proc"><div class="modal" style="max-width:760px;max-height:92vh">
+  <div class="mhd"><div class="mtitle" id="proc-modal-title">Processo</div><button class="xbtn" onclick="closeOv('ov-proc')">✕</button></div>
+  <div id="proc-modal-body"></div>
+</div></div>
+
+<!-- Modal confirmação saída -->
+<div class="ov" id="ov-confirma-del-cli"><div class="modal" style="max-width:400px">
+  <div class="mhd"><div class="mtitle">🗑️ Excluir cliente</div></div>
+  <p style="font-size:13px;margin-bottom:20px;color:var(--mut);font-family:var(--mono)">Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.</p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn br" onclick="closeOv('ov-confirma-del-cli')">Cancelar</button>
+    <button class="btn" style="background:var(--red);color:#fff" onclick="confirmarDelCliente()">Excluir</button>
+  </div>
+</div></div>
+
+<div class="ov" id="ov-confirma-del"><div class="modal" style="max-width:400px">
+  <div class="mhd"><div class="mtitle">🗑️ Excluir processo</div></div>
+  <p style="font-size:13px;margin-bottom:20px;color:var(--mut);font-family:var(--mono)">Tem certeza que deseja excluir este processo? Esta ação não pode ser desfeita.</p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn br" onclick="closeOv('ov-confirma-del')">Cancelar</button>
+    <button class="btn" style="background:var(--red);color:#fff" id="btn-confirma-del" onclick="confirmarDelProc()">Excluir</button>
+  </div>
+</div></div>
+
+<div class="ov" id="ov-confirma-saida"><div class="modal" style="max-width:420px">
+  <div class="mhd"><div class="mtitle">⚠️ Processo não salvo</div></div>
+  <p style="font-size:13px;margin-bottom:20px;color:var(--mut);font-family:var(--mono)">Você tem um processo em andamento. O que deseja fazer?</p>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn bd w100" onclick="confirmaAcaoSalvar()">💾 Salvar e continuar</button>
+    <button class="btn bo w100" onclick="confirmaAcaoDescartar()">Continuar sem salvar</button>
+    <button class="btn br w100" onclick="closeOv('ov-confirma-saida')">Cancelar</button>
+  </div>
+</div></div>
+
+<script>
+// ================================================================
+// DADOS BASE
+// ================================================================
+const BASE_MAT = {
+"001":{p:"LAMPADA LED TUBULAR T8 120CM 18W 6500K",u:"Unid",n:"85391010",v:22.10},
+"002":{p:"ARGAMASSA 20K INT AC-1 CINZA QUARTZOLIT",u:"SC",n:"32149000",v:19.50},
+"005":{p:"TINTA LATEX ACRÍLICO 18 LTS BRANCO",u:"LA",n:"32091010",v:336.70},
+"009":{p:"MASSA CORRIDA PVA 25KG",u:"LA",n:"32141020",v:119.60},
+"014":{p:"SACO DE CIMENTO 50KG",u:"SC",n:"25232910",v:48.75},
+"015":{p:"SACO DE AREIA 20KG",u:"SC",n:"25051000",v:7.88},
+"016":{p:'TUBO HIDRÁULICO 6M 3"',u:"TB",n:"39172300",v:130.00},
+"019":{p:"COLA PVC",u:"Unid",n:"35061090",v:19.99},
+"020":{p:"SACOS DE ENTULHO",u:"Unid",n:"63053310",v:1.95},
+"021":{p:"TIJOLO COMUM DE BARRO",u:"Unid",n:"69049000",v:3.87},
+"022":{p:"CALHA AGUA PLUVIAL C/ CORTE",u:"Ml",n:"73069000",v:45.50},
+"025":{p:"SELANTE PU 40 PARA VEDAÇÃO",u:"Unid",n:"35061090",v:45.50},
+"035":{p:"CABO ATOX 2,5MM PRETO 750V ROLO 100M",u:"Rl",n:"85365090",v:296.40},
+"037":{p:"DISJUNTOR BIPOLAR 40A MINI 3KA",u:"Unid",n:"85362000",v:63.70},
+"040":{p:"SIFÃO UNIVERSAL PVC",u:"UN",n:"39174090",v:37.70},
+"041":{p:"ASSENTO SANITÁRIO UNIVERSAL BRANCO",u:"PC",n:"39222000",v:42.81},
+"046":{p:"CONJUNTO TOMADA 1 MODULO 10A",u:"PC",n:"85366910",v:13.00},
+"057":{p:"VEDACIT SELANTE ACR P/TRINCA 550GR",u:"PC",n:"32141010",v:29.05},
+"058":{p:"SILICONE ACÉTICO 280GR BRANCO",u:"PC",n:"35061090",v:23.27},
+"065":{p:"VÁLVULA DESCARGA HYDRA COMPLETA",u:"Unid",n:"84819010",v:332.80},
+"066":{p:"TORNEIRA AUTOMÁTICA METAL P/ BANHEIRO",u:"Unid",n:"84818019",v:221.00},
+"067":{p:"REPARO VÁLVULA HYDRA",u:"Unid",n:"84819010",v:65.00},
+"068":{p:"VIDRO COMUM 180 X 920",u:"Unid",n:"70071900",v:45.50},
+"072":{p:"VENTILADOR VENTISILVA 65CM BIVOLT PRETO",u:"Unid",n:"84145990",v:806.00},
+"074":{p:"PLACA STANDARD DRYWALL 1,8M X 12,5MM",u:"Unid",n:"68091100",v:54.60},
+"085":{p:"TINTA EUCATEX PISO 18 LT CONCRETO",u:"LT",n:"32091010",v:291.75},
+"086":{p:"FECHADURA PORTA DE AÇO EXTERNA",u:"Unid",n:"83014000",v:97.50},
+"091":{p:"SACO DE PEDRA 20KG",u:"Unid",n:"25171000",v:6.83},
+"105":{p:"REFLETOR LED 200W 6500K PRETO",u:"Unid",n:"94054900",v:156.00},
+"108":{p:"TUBO RETO GALVANIZADO 30X20X1,25MM 6M",u:"Unid",n:"73066100",v:143.00},
+"171":{p:"GRELHA ACO INOX CLARIN.C/CAX.RED.10",u:"Unid",n:"73259910",v:10.57},
+"231":{p:"MASSA CORRIDA PVA BRANCA 3,6L",u:"Unid",n:"3209.10.10",v:39.00},
+"254":{p:"ACABAMENTO VÁLVULA HYDRA",u:"Unid",n:"84819010",v:71.50},
+"285":{p:"VIDRO COMUM INCOLOR 4MM",u:"Unid",n:"70071900",v:54.60},
+"292":{p:"PARAFUSO VASO E MICTÓRIO C/ BUCHA CROMADO",u:"Unid",n:"73181400",v:12.87},
+"295":{p:"REPARO VEDANTE P/ TORNEIRA",u:"Unid",n:"84819010",v:6.50},
+"326":{p:"VÁLVULA MICTÓRIO C/ TEMPORIZADOR",u:"Unid",n:"84818019",v:221.00},
+"327":{p:"SPUD PLÁSTICO SANFONADO",u:"Unid",n:"39174090",v:7.51},
+"349":{p:"VERGALHÃO DE AÇO 5/16 12M",u:"br",n:"72142000",v:88.40},
+"356":{p:"FIXADOR DE PORTA DE PISO",u:"Unid",n:"83025000",v:41.60},
+"391":{p:"BIANCO 3,6L",u:"BD",n:"35069120",v:130.00},
+"807":{p:"BARRA APOIO AÇO INOXIDÁVEL P/ BANHEIRO",u:"Unid",n:"73249000",v:156.00},
+"808":{p:"BANCADA 2210X610MM INOX 304 CHAPA #20 COM CUBA",u:"Und",n:"73239300",v:2470.00},
+"815":{p:"TINTA ACRÍLICA NOVACOR EXTRA RENDIMENTO FOSCO VERDE ITACARE",u:"Lt",n:"32091010",v:520.00},
+};
+
+const CONC = {
+  EGF:{
+    nome:"ENGEFAL EMPREITEIA E SERVIÇOS LTDA",
+    cnpj:"47.445.303/0001-81",
+    end:"R. do Iverno, 258 - Jd. Guarani, CEP 02848-050",
+    tel:"(11) 98151-8920",
+    ass:"Felipe Gomes",
+    val:"60"
+  },
+  JB:{
+    nome:"JB Comércio e Serviços",
+    cnpj:"53.903.147/0001-58",
+    end:"Avenida Dr. Olavo Egídio, 726 – Santana, São Paulo / SP – CEP: 02037-001",
+    tel:"(11) 96157-1111",
+    email:"jb.com.svs@gmail.com",
+    ass:"João Batista\nDiretor Técnico",
+    val:"90"
+  },
+  LC4:{
+    nome:"LUIS CARLOS SANTIAGO DA CRUZ 33364892881",
+    cnpj:"41.134.679/0001-99",
+    end:"RUA MARIO DE RESENDE, 140, BAIRRO JAÇANA - (11) 2240-2971",
+    tel:"",
+    ass:"LUIS CARLOS SANTIAGO DA CRUZ.",
+    val:"40"
+  },
+  MF:{
+    nome:"MF CONSTRUCAO E REFORMA LTDA",
+    cnpj:"42.356.536/0001-94",
+    end:"Rua da Bica, 9, Jardim São João (Zona Norte)\nSão Paulo - SP | CEP 02365-140",
+    tel:"+55 (11) 98915-0281 / +55 (11) 97096-4689",
+    email:"mfconstruereformas@gmail.com",
+    ass:"MF Contrução e Reformas\nFábio Xavier",
+    val:"60"
+  },
+  RPL:{
+    nome:"ROSANGELA PEREIRA DE LIMA",
+    cnpj:"38.045.897/0001-42",
+    end:"Rua Júlio Mário Salusse, 290 – Vila Penteado – São Paulo/SP",
+    tel:"11 96732-9122",
+    ass:"Rosângela Pereira de Lima\nDiretora Responsável",
+    val:"90"
+  },
+  WB:{
+    nome:"W.B. Reformas e Construções",
+    cnpj:"39.490.588/0001-44",
+    end:"Rua: Bernardo Lopes nº 189 – vila Nova Carolina – São Paulo / SP – CEP: 02263-050",
+    tel:"(11) 99673-3188",
+    email:"wb.wilbispo@gmail.com",
+    ass:"Wilson Bispo dos Santos",
+    val:"30"
+  },
+  WR:{
+    nome:"W.R. Serviço e Manutenção Geral",
+    cnpj:"53.758.427/0001-10",
+    end:"Rua:Carivaldina Barbosa Lima,106 Jardim Ester Yolanda",
+    tel:"(11) 95021-0569 / (11) 95970-4707",
+    email:"servicemanutencaowr@gmail.com",
+    ass:"Wellington Silva",
+    val:"50"
+  },
+  Estrela:{
+    nome:"ESTRELA EMPREITEIRA E CONSTRUÇÃO LTDA",
+    cnpj:"14.201.201/0001-61",
+    end:"Rua Júlio Mario Salusse, 290 – Vila Penteado – São Paulo/SP",
+    tel:"96157-1111",
+    ass:"João Batista\nDiretor Técnico",
+    val:"90"
+  },
+};
+
+const CLIENTES_BASE = [
+  {id:1,nome:"Presidente da Diretoria Executiva da APM da EMEF Gilberto Dupas",nome2:"EMEF Gilberto Dupas",contato:"Gabriela",cnpj:"61.192.340/0001-56",end:"Avenida Deputado Emilio Carlos, 3871",tel:"(11) 3983-1621",email:"emefgdupas@sme.prefeitura.sp.gov.br",ativo:false},
+  {id:2,nome:"Presidente da Diretoria Executiva da APM da EMEF Tenente Aviador",nome2:"EMEF Tenente Aviador",contato:"Jairo",cnpj:"00.046.490/2598-26",end:"Av. General Penha Brasil, 139 - Vila Angelica",tel:"(11) 3851-5820",email:"emeffgsantos@sme.prefeitura.sp.gov.br",ativo:false},
+  {id:3,nome:"Condomínio Myrna",nome2:"Condomínio Myrna",contato:"Myrna",cnpj:"",end:"Av. André Luis, 784 - Piçanha - Guarulhos",tel:"(11) 9602-1284",email:"myrna.condominio@gmail.com",ativo:false},
+  {id:4,nome:"Presidente da Diretoria Executiva da APM da EMEF Marcílio Dias",nome2:"EMEF Marcílio Dias",contato:"Silvia",cnpj:"53.500.963/0001-10",end:"R. Ribeiro Junqueira, 259 - Vila Roque",tel:"(11) 3984-6967",email:"emefmdias@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:5,nome:"Presidente da Diretoria Executiva da APM da EMEF Osvaldo Querino",nome2:"EMEF Osvaldo Querino",contato:"Solange",cnpj:"56.575.814/0001-09",end:"R. Camilo Peçanha, 10",tel:"(11) 3851-5329",email:"emefoqsimoes@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:6,nome:"Presidente da Diretoria Executiva da APM da EMEF Prof. Primo Pascoli Melare",nome2:"EMEF Primo Pascoli",contato:"Levi",cnpj:"04.534.760/0001-30",end:"Avenida Inajar de Souza, 6975",tel:"(11) 3982-8396",email:"emefprimopascoli@ig.com.br",ativo:false},
+  {id:7,nome:"Presidente da Diretoria Executiva da APM da EMEF Comandante Garcia D'Avila",nome2:"EMEF Garcia D'Villa",contato:"Roberto",cnpj:"51.170.199/0001-37",end:"R. Armando Coelho Silva, 859",tel:"(11) 2239-1667",email:"emefgdavila@sme.prefeitura.sp.gov.br",ativo:false},
+  {id:8,nome:"Presidente da Diretoria Executiva da APM do Cieja Professora Rose Mary Frasson",nome2:"CIEJA Rose Mary Frasson",contato:"Michele",cnpj:"14.004.191/0001-86",end:"R. Jitauna, 30 - Maracana",tel:"(11) 2953-0525",email:"michele.olim@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:9,nome:"Presidente da Diretoria Executiva da APM da EMEF Senador Teotônio Vilela",nome2:"EMEF Teotônio Vilela",contato:"Ioneide",cnpj:"59.830.984/0001-80",end:"R. Daniel Cerri, 1549",tel:"(11) 2941-7291",email:"emefceudapaz@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:10,nome:"Presidente da Diretoria Executiva da APM da EMEF Dona Angelina MaffeiVita",nome2:"EMEF Angelina MaffeiVit",contato:"Vinicius",cnpj:"52.031.382/0001-14",end:"R. Zilda, 193",tel:"(11) 3857-9122",email:"emefamvita@sme.prefeitura.sp.gov.br",ativo:false},
+  {id:11,nome:"Presidente da Diretoria Executiva da APM da EMEF Antonio Prudente",nome2:"EMEF Antonio Prudente",contato:"Ana",cnpj:"52.566.403/0001-04",end:"Rua Manuel Inacio Alvarenga, 50",tel:"(11) 3851-5722",email:"emefaprudente@prefeitura.sp.gov.br",ativo:false},
+  {id:12,nome:"Presidente da Diretoria Executiva da APM da EMEI Marechal Odilio Denys",nome2:"EMEI Marechal Odilio Denys",contato:"Ana",cnpj:"96.294.186/0001-08",end:"R. Porteira do Pinhal, 206",tel:"(11) 3984-9375",email:"",ativo:false},
+  {id:13,nome:"Presidente da Diretoria Executiva da APM da Cei Guilherme Henrique Pinto Coelho",nome2:"CEI Guilherme Henrique",contato:"Mayra",cnpj:"08.386.176/0001-35",end:"Rua Dos Pioneiros, 26",tel:"(11) 2255-6607",email:"ceighpcoelho@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:14,nome:"Presidente da Diretoria Executiva da APM da EMEF Maria Helena Faria Lima",nome2:"EMEF Maria Helena",contato:"Orminda",cnpj:"52.635.935/0001-48",end:"Av. Roland Garros, S/N",tel:"(11) 99319-7695",email:"emefmhflima@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:15,nome:"Presidente da Diretoria Executiva da APM da EMEF Caira Alayde",nome2:"EMEF Caira Alayde",contato:"Lucimara",cnpj:"10.826.604/0001-45",end:"R. Xavier da Silva Ferrao, 317",tel:"(11) 3979-7980",email:"emefcairaaamedea@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:16,nome:"Presidente da Diretoria Executiva da APM da EMEF Theo Dutra",nome2:"EMEF Theo Dutra",contato:"Ana",cnpj:"53.177.929/0001-57",end:"Av. Guilherme de Almeida, 110",tel:"(11) 3851-8820",email:"",ativo:false},
+  {id:17,nome:"Presidente da Diretoria Executiva da APM da EMEF Zilka Salaberry de Carvalho",nome2:"EMEF Zilka Salaberry",contato:"Roberta",cnpj:"03.559.254/0001-32",end:"R. Antônio da Franca e Horta, 35",tel:"(11) 2235-5657",email:"emefzscarvalho@sme.prefeitura.sp.gov.br",ativo:false},
+  {id:18,nome:"Presidente da Diretoria Executiva da APM da EMEF Gov. Lucas Nogueira Garcez",nome2:"EMEI Lucas Nogueira",contato:"Milene",cnpj:"52.805.645/0001-03",end:"Rua Jose da Costa Gaviao, 140",tel:"(11) 3851-2560",email:"",ativo:false},
+  {id:19,nome:"Centro de Assistencia Social de Vila Dionisia",nome2:"CEI Santo Expedito",contato:"Rita",cnpj:"48.902.381/0001-20",end:"Rua Vinte e Dois de Agosto, 263",tel:"(11) 4580-0006",email:"",ativo:true},
+  {id:20,nome:"Condomínio Dona Edélia",nome2:"Condomínio Irmã Ana Dutra",contato:"Carolina",cnpj:"",end:"R. Otavio Nebias, 20",tel:"(11) 97417-0250",email:"",ativo:false},
+  {id:21,nome:"Presidente da Diretoria Executiva da APM do Cei Jardim Primavera I",nome2:"CEI Jardim Primavera",contato:"Isis",cnpj:"07.930.882/0001-33",end:"R. Crisólia, 526 - Jardim Primavera",tel:"(11) 3936-2923",email:"",ativo:true},
+  {id:22,nome:"Presidente da Diretoria Executiva da APM do Cei Vereador João Toniolo",nome2:"CEI João Toniolo",contato:"Janaina",cnpj:"07.925.372/0001-78",end:"R. Padre Feliciano Domingues, 180 - Jardim Mariliza",tel:"(11) 3975-9024",email:"",ativo:true},
+  {id:23,nome:"Presidente da Diretoria Executiva da APM do Cei Jardim Peri",nome2:"CEI Jardim Peri",contato:"Leticia",cnpj:"07.811.832/0001-37",end:"R. Afonso Lopes Vieira, 57",tel:"(11) 3851-7646",email:"ceijperi@prefeitura.sp.gov.br",ativo:true},
+  {id:24,nome:"Presidente da Diretoria Executiva da APM do EMEI Antonio Callado",nome2:"EMEI Antonio Callado",contato:"Glaucia",cnpj:"02.547.200/0001-94",end:"Rua Araguacema, 100 - Bairro do limão",tel:"(11) 3955-1199",email:"emeiacallado@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:25,nome:"Presidente da Diretoria Executiva da APM da Emef Embaixador Raul Fernandes",nome2:"EMEF Raul Fernandes",contato:"Leticia",cnpj:"71.588.370/0001-30",end:"R. Nair Ramos Shuring, 158",tel:"(11) 3921-1033",email:"emefraulfernandes@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:26,nome:"Presidente da Diretoria Executiva da APM da EMEB Prof. Elza de Lourdes Segre",nome2:"EMEB Prof. Elza de Lourdes Segre",contato:"Sandra",cnpj:"",end:"Rua São Luíz, 81 - Chácara Hungara, Diadema - SP",tel:"(11) 4051-1307",email:"",ativo:false},
+  {id:27,nome:"Presidente da Diretoria Executiva da APM da EMEI Professor Arlindo Veiga dos Santos",nome2:"EMEI Professor Arlindo Veiga",contato:"Beth",cnpj:"59.398.214/0001-00",end:"Av. Félix Alves Pereira, 9 - Jardim Centenario",tel:"(11) 3984-9879",email:"emeiavsantos@sme.prefeitura.sp.gov.br",ativo:true},
+  {id:28,nome:"Presidente da Diretoria Executiva da APM da EMEF Arthur Guimarães",nome2:"EMEF Arthur Guimarães",contato:"Ana",cnpj:"59.984.172/0001-90",end:"R. Jaguaribe, 354 - Vila Buarque, São Paulo - SP",tel:"(11) 3331-5338",email:"",ativo:false},
+  {id:29,nome:"Presidente da Diretoria Executiva da APM da CEMEI Jardim Tremembé",nome2:"CEMEI Jardim Tremembé",contato:"Sonia",cnpj:"42.638.602/0001-19",end:"R. Baquio Preto, 113 - Parque Casa de Pedra, São Paulo - SP",tel:"(11) 91734-5198",email:"",ativo:true},
+  {id:30,nome:"Presidente da Diretoria Executiva da APM da EMEI Paulo VI",nome2:"EMEI Paulo VI",contato:"João",cnpj:"50.861.400/0001-60",end:"Rua Carlo Perinello, S/N - Vila Mangalot, São Paulo - SP",tel:"(11) 3904-0555",email:"",ativo:true},
+  {id:31,nome:"Presidente da Diretoria Executiva da APM da CEI Wilson Jose Abdalla",nome2:"CEI Wilson Jose",contato:"Marta",cnpj:"07.203.563/0001-26",end:"R. Neves de Carvalho, 850 - Bom Retiro, São Paulo - SP",tel:"(11) 3222-2109",email:"",ativo:true},
+];
+
+// STATE
+let S = {
+  clientes: [],
+  cfg: {},
+  processos: [],
+  materiais: {}, // cache local: {codigo: {codigo,produto,unidade,ncm,valorUnitario}}
+  danfe: {itens:[],cliente:null,chips:[],vars:null,vencedora:'EGF',salvo:false},
+  nf: {itens:[],cnaes:[],cliente:null,chips:[],vars:null,vencedora:'EGF',salvo:false},
+  cliTarget: null,
+  editCliId: null,
+};
+
+// ================================================================
+// INIT
+// ================================================================
+// ---- Numeração auto (localStorage) ----
+function getProxOnum() {
+  // Gerar número aleatório único acima de 200, diferente dos já usados
+  const usados = new Set(S.processos.map(p => p.onum).filter(Boolean));
+  let num;
+  let tentativas = 0;
+  do {
+    num = String(Math.floor(Math.random() * 800) + 200).padStart(5,'0');
+    tentativas++;
+  } while(usados.has(num) && tentativas < 1000);
+  return num;
+}
+
+  // Helper XSS: escapa valores para interpolação segura em innerHTML
+  function esc(v) {
+    if(v==null) return '';
+    return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+function dataHojeMenos30() {
+  const d = new Date();
+  d.setDate(d.getDate()-30);
+  return d.toISOString().split('T')[0];
+}
+function dataHojeMenos(dias) {
+  const d = new Date();
+  d.setDate(d.getDate()-dias);
+  return d.toISOString().split('T')[0];
+}
+
+// init() chamado pelo Firebase após carregar
+async function initApp() {
+  // Carregar token do Render via Netlify Function (não exposto no HTML)
+  try {
+    const tr = await fetch('/.netlify/functions/config');
+    if(tr.ok) { const td = await tr.json(); window.EXCEL_API_TOKEN = td.token || ''; }
+  } catch(e) { window.EXCEL_API_TOKEN = ''; }
+
+  // Aguardar window.FS estar disponível (módulo ES pode carregar após o evento load)
+  let tries = 0;
+  while(typeof window.FS === 'undefined' && tries < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  try {
+    // Carregar dados do Firestore
+    const [clientes, processos, cfg, mats] = await Promise.all([
+      FS.carregarClientes(),
+      FS.carregarProcs(),
+      FS.carregarCfg(),
+      FS.carregarMateriais(),
+    ]);
+    const onumSeq = 0; // numeração agora é aleatória, não sequencial
+    // Popular cache de materiais
+    if(mats.length) {
+      mats.forEach(m => { S.materiais[m.codigo] = m; });
+    } else {
+      // Seed inicial a partir do BASE_MAT
+      Object.entries(BASE_MAT).forEach(([cod, m]) => {
+        S.materiais[cod] = {codigo:cod, produto:m.p, unidade:m.u, ncm:m.n, valorUnitario:m.v};
+      });
+      await Promise.all(Object.entries(BASE_MAT).map(([cod, m]) =>
+        FS.salvarMaterial({codigo:cod, produto:m.p, unidade:m.u, ncm:m.n, valorUnitario:m.v})
+      ));
+    }
+
+    // Re-seed clientes se base local tem mais que o Firestore
+    if(clientes.length < CLIENTES_BASE.length) {
+      await Promise.all(CLIENTES_BASE.map(c => FS.salvarCliente(c)));
+      S.clientes = [...CLIENTES_BASE];
+    }
+
+    // Clientes: usar base se Firestore vazio
+    S.clientes = clientes.length ? clientes : [...CLIENTES_BASE];
+
+    // Se base estava vazia e usou CLIENTES_BASE, salvar no Firestore
+    if(!clientes.length) {
+      await Promise.all(CLIENTES_BASE.map(c => FS.salvarCliente(c)));
+    }
+
+    S.processos = processos;
+    if(cfg) { S.cfg = cfg; loadCfg(); }
+
+    // Guardar sequência local para uso rápido (Firestore é fonte oficial)
+    try { localStorage.setItem('egf_onum_seq', onumSeq); } catch(e){}
+
+  } catch(err) {
+    console.warn('Firestore indisponível, usando localStorage:', err);
+    try { S.clientes = JSON.parse(localStorage.getItem('egf_cli')||'null') || [...CLIENTES_BASE]; } catch(e){ S.clientes=[...CLIENTES_BASE]; }
+    try { S.processos = JSON.parse(localStorage.getItem('egf_proc')||'[]'); } catch(e){ S.processos=[]; }
+    try { const scfg = localStorage.getItem('egf_cfg'); if(scfg){ S.cfg=JSON.parse(scfg); loadCfg(); } } catch(e){}
+  }
+
+  // Campos automáticos DANFE
+  const numD = getProxOnum();
+  const el_dn = document.getElementById('d-onum'); if(el_dn) el_dn.value = numD;
+  const el_dd = document.getElementById('d-odata'); if(el_dd) el_dd.value = dataHojeMenos30();
+
+  // Campos automáticos NF Serviço
+  const numN = getProxOnum();
+  const el_nn = document.getElementById('n-onum'); if(el_nn) el_nn.value = numN;
+  const el_nd = document.getElementById('n-odata'); if(el_nd) el_nd.value = dataHojeMenos30();
+
+  preencherDatasConc();
+  renderCliPage(); renderProc(); sb();
+  setupDrop('d-dz','d-file',uploadDanfe);
+  setupDrop('n-dz','n-file',uploadNF);
+
+}
+
+// Fallback: se Firebase não carregou (sem internet), init direto
+
+
+function preencherDatasConc() {
+  const d1n = document.getElementById('n-odata-c1');
+  const d2n = document.getElementById('n-odata-c2');
+  if(d1n) d1n.value = dataHojeMenos(30 + Math.floor(Math.random()*5)+2);
+  if(d2n) d2n.value = dataHojeMenos(30 + Math.floor(Math.random()*5)+7);
+  const d1d = document.getElementById('d-odata-c1');
+  const d2d = document.getElementById('d-odata-c2');
+  if(d1d) d1d.value = dataHojeMenos(30 + Math.floor(Math.random()*5)+2);
+  if(d2d) d2d.value = dataHojeMenos(30 + Math.floor(Math.random()*5)+7);
+}
+
+function loadCfg() {
+  const f = (id,v) => { const el=document.getElementById(id); if(el)el.value=v||''; };
+  f('cfg-razao',S.cfg.razao); f('cfg-cnpj',S.cfg.cnpj); f('cfg-end',S.cfg.end);
+  f('cfg-cep',S.cfg.cep); f('cfg-c1n',S.cfg.c1n); f('cfg-c1t',S.cfg.c1t);
+  f('cfg-c2n',S.cfg.c2n); f('cfg-c2t',S.cfg.c2t);
+}
+
+async function saveCfg() {
+  S.cfg = {
+    razao:v('cfg-razao'),cnpj:v('cfg-cnpj'),end:v('cfg-end'),cep:v('cfg-cep'),
+    c1n:v('cfg-c1n'),c1t:v('cfg-c1t'),c2n:v('cfg-c2n'),c2t:v('cfg-c2t')
+  };
+  try { await FS.salvarCfg(S.cfg); } catch(e){ localStorage.setItem('egf_cfg',JSON.stringify(S.cfg)); }
+  toast('✓ Salvo com sucesso!', 'ok');
+}
+
+function sb(msg) {
+  document.getElementById('sb-proc').textContent = S.processos.length+' processos';
+  document.getElementById('sb-cli').textContent = S.clientes.length+' clientes';
+  if(msg) {
+    const el = document.getElementById('sb-proc');
+    const orig = el.textContent;
+    el.style.color = '#4ade80';
+    el.textContent = msg;
+    setTimeout(() => { el.style.color = ''; el.textContent = S.processos.length+' processos'; }, 3000);
+  }
+}
+
+function v(id) { return document.getElementById(id)?.value||''; }
+function fR(n) { return (parseFloat(n)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fD(s) { if(!s)return''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+function rnd(a,b) { return a+Math.random()*(b-a); }
+function hoje() { return new Date().toISOString().split('T')[0]; }
+
+function parseJsonRobusto(txt) {
+  try { return JSON.parse(txt.trim()); } catch(e){}
+  try { return JSON.parse(txt.replace(/```json|```/g,'').trim()); } catch(e){}
+  try { const m=txt.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); } catch(e){}
+  try {
+    const fixed=txt.replace(/```json|```/g,'').trim().replace(/'/g,'"');
+    const m=fixed.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]);
+  } catch(e){}
+  try { const m=txt.match(/\[[\s\S]*\]/); if(m) return {itens:JSON.parse(m[0])}; } catch(e){}
+  throw new Error('Não foi possível interpretar a resposta da IA. Tente o modo manual.');
+}
+function addDias(dateStr,dias) { const d=new Date(dateStr); d.setDate(d.getDate()+parseInt(dias)); return d.toISOString().split('T')[0]; }
+
+// ================================================================
+// NAVEGAÇÃO
+// ================================================================
+// ================================================================
+// CONFIRMAÇÃO DE SAÍDA (etapa 3)
+// ================================================================
+let _acaoPendente = null; // { fn, args }
+
+
+function _temDadosEmAndamento(tipo) {
+  if(tipo === 'danfe') return S.danfe.itens.length > 0 && !S.danfe.salvo;
+  if(tipo === 'nf')    return S.nf.itens.length > 0 && !S.nf.salvo;
+  return false;
+}
+
+function _etapa3Ativa() {
+  // Verifica se DANFE está na etapa 3
+  const d3 = document.getElementById('ds-3');
+  if(d3 && d3.style.display === 'block') return 'danfe';
+  // Verifica se NF está na etapa 3
+  const n3 = document.getElementById('ns-3');
+  if(n3 && n3.style.display === 'block') return 'nfserv';
+  return null;
+}
+
+function _pedirConfirmacao(acaoFn) {
+  _acaoPendente = acaoFn;
+  openOv('ov-confirma-saida');
+}
+
+async function confirmaAcaoSalvar() {
+  closeOv('ov-confirma-saida');
+  const tipo = _etapa3Ativa();
+  if(tipo) {
+    try {
+      await salvarProcManual(tipo === 'danfe' ? 'danfe' : 'nfserv');
+    } catch(e) { /* erro já tratado dentro de salvarProcManual */ }
+  }
+  if(_acaoPendente) { _acaoPendente(); _acaoPendente = null; }
+}
+
+function confirmaAcaoDescartar() {
+  closeOv('ov-confirma-saida');
+  if(_acaoPendente) { _acaoPendente(); _acaoPendente = null; }
+}
+
+function goSec(id, btn) {
+  // Se estiver na etapa 3 com dados, pede confirmação
+  const tipo = _etapa3Ativa();
+  if(tipo && _temDadosEmAndamento(tipo === 'danfe' ? 'danfe' : 'nf')) {
+    _pedirConfirmacao(() => _goSecDireto(id, btn));
+    return;
+  }
+  _goSecDireto(id, btn);
+}
+
+function _goSecDireto(id, btn) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+
+function setupDrop(dzId, inpId, fn) {
+  const dz = document.getElementById(dzId);
+  if (!dz) return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+  dz.addEventListener('drop',e=>{
+    e.preventDefault(); dz.classList.remove('drag');
+    const f=e.dataTransfer.files[0];
+    if(f&&f.type==='application/pdf'){
+      const inp=document.getElementById(inpId);
+      const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files;
+      fn(inp);
+    }
+  });
+}
+
+function openOv(id) { document.getElementById(id).classList.add('open'); }
+function closeOv(id) {
+  document.getElementById(id).classList.remove('open');
+  if(id === 'ov-proc') {
+    document.getElementById('proc-modal-title').textContent = 'Processo';
+  }
+}
+document.addEventListener('click',e=>{ if(e.target.classList.contains('ov')) e.target.classList.remove('open'); });
+
+// ================================================================
+// DANFE — STEPS
+// ================================================================
+function dsGo(n) {
+  for(let i=1;i<=3;i++){
+    const c=document.getElementById('ds-'+i);
+    const s=document.getElementById('ds'+i);
+    if(c) c.style.display = i===n?'block':'none';
+    if(s){s.classList.remove('on','dn'); if(i===n)s.classList.add('on'); else if(i<n)s.classList.add('dn');}
+  }
+  if(n===3) dBuildResume();
+}
+
+function dModo(m) {
+  const up = document.getElementById('dm-upload');
+  if(up) up.style.display = m==='upload'?'block':'none';
+}
+
+function resetDanfe(forcar) {
+  // Se estiver na etapa 3 com dados e não forçado, pede confirmação
+  const d3 = document.getElementById('ds-3');
+  if(!forcar && d3 && d3.style.display === 'block' && S.danfe.itens.length > 0) {
+    _pedirConfirmacao(() => resetDanfe(true));
+    return;
+  }
+  S.danfe={itens:[],cliente:null,chips:[],vars:null,vencedora:'EGF',salvo:false};
+  document.querySelectorAll('#d-chips .chip').forEach(c=>c.classList.remove('on'));
+  ['d-done','d-err','d-loading'].forEach(id=>{ const el=document.getElementById(id); if(el)el.style.display='none'; });
+  const ga=document.getElementById('d-gen-area'); if(ga)ga.style.display='block';
+  // Novo número de orçamento
+  const el_dn=document.getElementById('d-onum'); if(el_dn) el_dn.value=getProxOnum();
+  // Limpar data do orçamento (hoje -30 dias)
+  const el_dd=document.getElementById('d-odata'); if(el_dd) el_dd.value=dataHojeMenos30();
+  // Limpar NF
+  const el_nf=document.getElementById('d-nfnum'); if(el_nf) el_nf.value='';
+  const el_nfd=document.getElementById('d-nfdata'); if(el_nfd) el_nfd.value='';
+  // Limpar validação
+  const ve=document.getElementById('d-val-errs'); if(ve) ve.innerHTML='';
+  // Limpar datas dos concorrentes e regerar
+  ['d-odata-c1','d-odata-c2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  // Limpar labels dos concorrentes
+  const l1=document.getElementById('d-label-c1'); if(l1) l1.textContent='Concorrente 1';
+  const l2=document.getElementById('d-label-c2'); if(l2) l2.textContent='Concorrente 2';
+  // Limpar cliente
+  const cd=document.getElementById('d-cli-disp'); if(cd) cd.innerHTML='<div class="mut">Nenhum cliente selecionado.</div>';
+  // Limpar itens
+  renderDItens();
+  preencherDatasConc();
+  // Limpar input de arquivo para permitir reselecionar o mesmo PDF
+  const dfi = document.getElementById('d-file'); if(dfi) dfi.value = '';
+  // Resetar empresa vencedora para Engefal
+  S.danfe.vencedora = 'EGF';
+  document.querySelectorAll('#d-winner-chips .chip').forEach(c => { c.classList.toggle('on', c.dataset.id === 'EGF'); });
+  document.querySelectorAll('#d-chips .chip').forEach(c => { c.style.display = c.dataset.id === 'EGF' ? 'none' : ''; });
+  dModo(null); dsGo(1);
+  const vc=document.getElementById('d-vars-content'); if(vc) vc.style.display='none';
+  const vl=document.getElementById('d-vars-loading'); if(vl) vl.style.display='none';
+}
+
+async function processarNovosMateriaisPDF(itens) {
+  for(const item of itens) {
+    const cod = item.codigo;
+    // Ignorar códigos EGF gerados automaticamente
+    if(cod.startsWith('EGF')) continue;
+    const existente = S.materiais[cod];
+    if(!existente) {
+      // Novo — salvar direto
+      const novo = {codigo:cod, produto:item.produto, unidade:item.unidade, ncm:item.ncm||'', valorUnitario:item.valorUnitario};
+      S.materiais[cod] = novo;
+      try { await FS.salvarMaterial(novo); } catch(e){}
+    } else if(Math.abs(existente.valorUnitario - item.valorUnitario) > 0.001) {
+      // Mesmo código, valor diferente — perguntar
+      const atualizar = confirm(
+        `Código ${cod} — "${item.produto}"
+
+Valor salvo: R$ ${fR(existente.valorUnitario)}
+Valor no PDF: R$ ${fR(item.valorUnitario)}
+
+Atualizar para o novo valor?`
+      );
+      if(atualizar) {
+        existente.valorUnitario = item.valorUnitario;
+        try { await FS.salvarMaterial(existente); } catch(e){}
+      }
+    }
+  }
+}
+
+function getMat(cod) {
+  const pad = cod.padStart(3,'0');
+  return S.materiais[pad] || S.materiais[cod] || null;
+}
+
+function dAddItem() {
+  const cod = v('d-cod').trim();
+  const qtd = parseFloat(v('d-qtd'))||1;
+  if(!cod) return;
+  const pad = cod.padStart(3,'0');
+  const mat = getMat(cod);
+  if(mat) {
+    const ex = S.danfe.itens.findIndex(i=>i.codigo===pad||i.codigo===cod);
+    if(ex>=0){ S.danfe.itens[ex].qtd+=qtd; }
+    else S.danfe.itens.push({codigo:pad,produto:mat.produto,qtd,unidade:mat.unidade,ncm:mat.ncm||'',valorUnitario:mat.valorUnitario,valorTotal:qtd*mat.valorUnitario});
+  } else {
+    S.danfe.itens.push({codigo:cod,produto:'(descreva o item)',qtd,unidade:'Unid',ncm:'',valorUnitario:0,valorTotal:0});
+  }
+  document.getElementById('d-cod').value='';
+  document.getElementById('d-qtd').value='1';
+  document.getElementById('d-busca-mat').value='';
+  document.getElementById('d-mat-sugest').style.display='none';
+  document.getElementById('d-cod').focus();
+  renderDItens();
+}
+
+function buscarMat(q) {
+  const box = document.getElementById('d-mat-sugest');
+  if(!q || q.length < 2) { box.style.display='none'; return; }
+  const ql = q.toLowerCase();
+  const results = Object.values(S.materiais).filter(m =>
+    m.produto.toLowerCase().includes(ql) || m.codigo.includes(q)
+  ).slice(0, 8);
+  if(!results.length) { box.style.display='none'; return; }
+  box.innerHTML = results.map(m => `
+    <div class="cli" onclick="selecionarMat('${esc(m.codigo)}')" style="padding:7px 12px;cursor:pointer">
+      <span class="tag ty" style="margin-right:6px">${esc(m.codigo)}</span>
+      <span style="font-size:11px">${esc(m.produto)}</span>
+      <span class="mut" style="float:right;font-size:11px">R$ ${fR(m.valorUnitario)}</span>
+    </div>`).join('');
+  box.style.display='block';
+}
+
+function selecionarMat(cod) {
+  document.getElementById('d-cod').value = cod;
+  document.getElementById('d-busca-mat').value = '';
+  document.getElementById('d-mat-sugest').style.display='none';
+  dAddItem();
+}
+
+function renderDItens() {
+  S.danfe.salvo = false;
+  const tbody=document.getElementById('d-tbody');
+  const empty=document.getElementById('d-empty');
+  const tw=document.getElementById('d-tw');
+  if(!tbody) return;
+  const n=S.danfe.itens.length;
+  empty.style.display=n?'none':'block';
+  tw.style.display=n?'block':'none';
+  let tot=0;
+  tbody.innerHTML=S.danfe.itens.map((item,i)=>{
+    const vt=item.qtd*item.valorUnitario; tot+=vt;
+    return `<tr>
+      <td><span class="tag ty">${esc(item.codigo)}</span></td>
+      <td><input type="text" value="${esc(item.produto)}" style="width:100%;font-size:11px" onchange="S.danfe.itens[${i}].produto=this.value"></td>
+      <td><input type="number" value="${item.qtd}" min="0.01" step="0.01" style="width:55px" onchange="S.danfe.itens[${i}].qtd=parseFloat(this.value)||1;renderDItens()"></td>
+      <td>${esc(item.unidade)}</td>
+      <td class="mut">${esc(item.ncm)}</td>
+      <td><input type="number" value="${item.valorUnitario}" min="0" step="0.01" style="width:75px" onchange="S.danfe.itens[${i}].valorUnitario=parseFloat(this.value)||0;renderDItens()"></td>
+      <td class="mono" style="font-weight:600">R$ ${fR(vt)}</td>
+      <td><button class="btn br bsm" onclick="S.danfe.itens.splice(${i},1);renderDItens()">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('d-total').textContent='R$ '+fR(tot);
+}
+
+async function uploadDanfe(inp) {
+  const f=inp.files[0]; if(!f) return;
+  document.getElementById('d-parse-st').style.display='block';
+  document.getElementById('d-parse-msg').textContent='Lendo PDF...';
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try {
+      const b64=e.target.result.split(',')[1];
+      document.getElementById('d-parse-msg').textContent='IA extraindo itens...';
+
+      // Primeira chamada — extrai todos os itens
+      const resp=await fetch('/.netlify/functions/claude',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,
+          messages:[{role:'user',content:[
+            {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+            {type:'text',text:'Extraia TODOS os itens da tabela de materiais deste PDF. Retorne SOMENTE JSON puro sem markdown, sem texto antes ou depois: {"itens":[{"codigo":"014","produto":"SACO DE CIMENTO 50KG","qtd":1,"unidade":"SC","ncm":"25232910","valorUnitario":48.75,"valorTotal":48.75}]}. Use aspas duplas. Valores numéricos sem aspas.'}
+          ]}]})
+      });
+
+      // Tratar resposta não-JSON
+      const rawText = await resp.text();
+      let data;
+      try { data = JSON.parse(rawText); }
+      catch(e) {
+        if(rawText.includes('<html')||rawText.includes('<HTML'))
+          throw new Error('PDF muito grande para processar de uma vez. Tente dividir em partes menores ou use o modo manual.');
+        throw new Error('Resposta inválida: '+rawText.substring(0,80));
+      }
+      if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+
+      const txt=data.content.map(b=>b.text||'').join('');
+      const parsed=parseJsonRobusto(txt);
+      const itensExtraidos = (parsed.itens||[]).map((x,i)=>({
+        codigo:String(x.codigo||'').trim() || ('EGF'+String(100+i).padStart(3,'0')),
+        produto:String(x.produto||''),
+        qtd:parseFloat(x.qtd)||1,
+        unidade:String(x.unidade||'Unid'),
+        ncm:String(x.ncm||''),
+        valorUnitario:parseFloat(x.valorUnitario)||0,
+        valorTotal:parseFloat(x.valorTotal)||0,
+      }));
+      S.danfe.itens = itensExtraidos;
+      document.getElementById('d-parse-st').style.display='none';
+      dModo('manual'); renderDItens();
+      await processarNovosMateriaisPDF(itensExtraidos);
+    } catch(err) { document.getElementById('d-parse-msg').textContent='Erro: '+err.message; }
+  };
+  reader.readAsDataURL(f);
+}
+
+// ================================================================
+// DANFE — VALIDAÇÃO DRE
+// ================================================================
+function dValidate() {
+  const odata=v('d-odata');
+  const nfdata=v('d-nfdata');
+  const oval=60; // fixo
+  const errs=[];
+  if(odata&&nfdata) {
+    if(nfdata<=odata) errs.push('✗ Data da NF deve ser POSTERIOR à data do orçamento ('+fD(odata)+').');
+    const venc=addDias(odata,oval);
+    if(nfdata>venc) errs.push('✗ Data da NF ('+fD(nfdata)+') fora do prazo — orçamento vence em '+fD(venc)+'.');
+  }
+  const msg = errs.length
+    ? `<div class="vbox"><div class="vbox-title">⚠ Regras da DRE</div>${errs.map(e=>`<div class="vline">${e}</div>`).join('')}</div>`
+    : (odata&&nfdata?'<div class="al aok mb8">✓ Datas válidas.</div>':'');
+  // Atualizar em ambos os locais (aba 1 inline + aba 3 resumo)
+  const inl = document.getElementById('d-val-errs-inline'); if(inl) inl.innerHTML=msg;
+  const box = document.getElementById('d-val-errs');        if(box) box.innerHTML=msg;
+  return errs.length===0;
+}
+
+function dBuildResume() {
+  const tot=S.danfe.itens.reduce((s,i)=>s+i.qtd*i.valorUnitario,0);
+  document.getElementById('d-total-fin').textContent='R$ '+fR(tot);
+  const cli=S.danfe.cliente;
+  document.getElementById('d-resumo').innerHTML=DOMPurify.sanitize(`<div class="g2" style="font-size:12px;margin-bottom:8px">
+    <div><span class="mut">Cliente: </span><strong>${cli?cli.nome2:'—'}</strong></div>
+    <div><span class="mut">Concorrentes: </span><strong>${S.danfe.chips.join(', ')||'—'}</strong></div>
+    <div><span class="mut">Itens: </span><strong>${S.danfe.itens.length}</strong></div>
+    <div><span class="mut">Orçamento Nº: </span><strong>${v('d-onum')||'—'}</strong></div>
+  </div>`);
+  dValidate();
+}
+
+// ================================================================
+// DANFE — GERAR
+// ================================================================
+
+// ================================================================
+// NF SERVIÇO — STEPS
+// ================================================================
+function nsGo(n) {
+  for(let i=1;i<=3;i++){
+    const c=document.getElementById('ns-'+i);
+    const s=document.getElementById('ns'+i);
+    if(c) c.style.display=i===n?'block':'none';
+    if(s){s.classList.remove('on','dn'); if(i===n)s.classList.add('on'); else if(i<n)s.classList.add('dn');}
+  }
+  if(n===3) nBuildResume();
+}
+
+function nModo(m) {
+  const up = document.getElementById('nm-upload');
+  if(up) up.style.display = m==='upload'?'block':'none';
+}
+
+function resetNF(forcar) {
+  // Se estiver na etapa 3 com dados e não forçado, pede confirmação
+  const n3 = document.getElementById('ns-3');
+  if(!forcar && n3 && n3.style.display === 'block' && S.nf.itens.length > 0) {
+    _pedirConfirmacao(() => resetNF(true));
+    return;
+  }
+  S.nf={itens:[],cnaes:[],cliente:null,chips:[],vars:null,vencedora:'EGF',salvo:false};
+  document.querySelectorAll('#n-chips .chip').forEach(c=>c.classList.remove('on'));
+  ['n-done','n-err','n-loading'].forEach(id=>{ const el=document.getElementById(id); if(el)el.style.display='none'; });
+  const ga=document.getElementById('n-gen-area'); if(ga)ga.style.display='block';
+  // Novo número de orçamento
+  const el_nn=document.getElementById('n-onum'); if(el_nn) el_nn.value=getProxOnum();
+  // Limpar data do orçamento (hoje -30 dias)
+  const el_nd=document.getElementById('n-odata'); if(el_nd) el_nd.value=dataHojeMenos30();
+  // Limpar NF
+  const el_nf=document.getElementById('n-nfnum'); if(el_nf) el_nf.value='';
+  const el_nfd=document.getElementById('n-nfdata'); if(el_nfd) el_nfd.value='';
+  // Limpar validação
+  const ve=document.getElementById('n-val-errs'); if(ve) ve.innerHTML='';
+  // Limpar datas dos concorrentes e regerar
+  ['n-odata-c1','n-odata-c2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  // Limpar labels dos concorrentes
+  const l1=document.getElementById('n-label-c1'); if(l1) l1.textContent='Concorrente 1';
+  const l2=document.getElementById('n-label-c2'); if(l2) l2.textContent='Concorrente 2';
+  // Limpar cliente
+  const cd=document.getElementById('n-cli-disp'); if(cd) cd.innerHTML='<div class="mut">Nenhum cliente selecionado.</div>';
+  // Limpar tabela de itens
+  renderNSvc();
+  preencherDatasConc();
+  // Limpar input de arquivo para permitir reselecionar o mesmo PDF
+  const nfi = document.getElementById('n-file'); if(nfi) nfi.value = '';
+  // Resetar empresa vencedora para Engefal
+  S.nf.vencedora = 'EGF';
+  document.querySelectorAll('#n-winner-chips .chip').forEach(c => { c.classList.toggle('on', c.dataset.id === 'EGF'); });
+  document.querySelectorAll('#n-chips .chip').forEach(c => { c.style.display = c.dataset.id === 'EGF' ? 'none' : ''; });
+  nModo(null); nsGo(1);
+  const vc=document.getElementById('n-vars-content'); if(vc) vc.style.display='none';
+  const vl=document.getElementById('n-vars-loading'); if(vl) vl.style.display='none';
+}
+
+// ---- NF Serviço — lista simples de itens ----
+function egfCod() {
+  return 'EGF'+String(Math.floor(Math.random()*900)+100);
+}
+
+function nAddItem() {
+  if(!S.nf.itens) S.nf.itens=[];
+  S.nf.itens.push({codigo:egfCod(), produto:'', qtd:1, unidade:'serviço', valorUnitario:0, valorTotal:0});
+  renderNSvc();
+}
+
+function renderNSvc() {
+  S.nf.salvo = false;
+  if(!S.nf.itens) S.nf.itens=[];
+  const tbody=document.getElementById('n-svc-tbody');
+  const empty=document.getElementById('n-svc-empty');
+  const tw=document.getElementById('n-svc-tw');
+  if(!tbody) return;
+  const n=S.nf.itens.length;
+  empty.style.display=n?'none':'block';
+  tw.style.display=n?'block':'none';
+  let tot=0;
+  tbody.innerHTML=S.nf.itens.map((item,i)=>{
+    const vt=item.qtd*(parseFloat(item.valorUnitario)||0); tot+=vt;
+    return `<tr>
+      <td><span class="tag ty" style="cursor:pointer" title="Clique para gerar novo código" onclick="S.nf.itens[${i}].codigo=egfCod();renderNSvc()">${esc(item.codigo)}</span></td>
+      <td><input type="number" value="${item.qtd}" min="1" step="1" style="width:55px" onchange="S.nf.itens[${i}].qtd=parseFloat(this.value)||1;S.nf.itens[${i}].valorTotal=S.nf.itens[${i}].qtd*S.nf.itens[${i}].valorUnitario;renderNSvc()"></td>
+      <td class="mut">serviço</td>
+      <td><input type="text" value="${(item.produto||'').replace(/"/g,'&quot;')}" placeholder="Descrição do serviço..." style="min-width:200px" onchange="S.nf.itens[${i}].produto=this.value"></td>
+      <td><input type="number" value="${item.valorUnitario||''}" min="0" step="0.01" placeholder="0,00" style="width:85px" onchange="S.nf.itens[${i}].valorUnitario=parseFloat(this.value)||0;S.nf.itens[${i}].valorTotal=S.nf.itens[${i}].qtd*S.nf.itens[${i}].valorUnitario;renderNSvc()"></td>
+      <td class="mono" style="font-weight:600">R$ ${fR(vt)}</td>
+      <td><button class="btn br bsm" onclick="S.nf.itens.splice(${i},1);renderNSvc()">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('n-total').textContent='R$ '+fR(tot);
+}
+
+
+
+
+async function uploadNF(inp) {
+  const f=inp.files[0]; if(!f) return;
+  document.getElementById('n-parse-st').style.display='block';
+  document.getElementById('n-parse-msg').textContent='Lendo PDF...';
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try {
+      const b64=e.target.result.split(',')[1];
+      document.getElementById('n-parse-msg').textContent='IA extraindo itens de serviço...';
+      const resp=await fetch('/.netlify/functions/claude',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,
+          messages:[{role:'user',content:[
+            {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+            {type:'text',text:'Extraia os itens de serviço deste rascunho. Retorne SOMENTE JSON puro sem markdown: {"itens":[{"produto":"Substituição de 10 vidros da escola","qtd":10,"valorUnitario":80.00}]}. Se houver multiplicação (ex: 10 x R$ 80,00), separe em qtd e valorUnitario. Se não houver multiplicação, use qtd:1 e o valor total como valorUnitario. Use aspas duplas.'}
+          ]}]})
+      });
+      const rawText = await resp.text();
+      let data;
+      try { data = JSON.parse(rawText); }
+      catch(e) {
+        if(rawText.includes('<html')||rawText.includes('<HTML'))
+          throw new Error('PDF muito grande. Tente dividir em partes menores ou use o modo manual.');
+        throw new Error('Resposta inválida: '+rawText.substring(0,80));
+      }
+      if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+      const txt=data.content.map(b=>b.text||'').join('');
+      const parsed=parseJsonRobusto(txt);
+      if(!S.nf.itens) S.nf.itens=[];
+      S.nf.itens=(parsed.itens||[]).map(it=>({
+        codigo:egfCod(),
+        produto:String(it.produto||''),
+        qtd:parseFloat(it.qtd)||1,
+        unidade:'serviço',
+        valorUnitario:parseFloat(it.valorUnitario)||0,
+        valorTotal:(parseFloat(it.qtd)||1)*(parseFloat(it.valorUnitario)||0)
+      }));
+      document.getElementById('n-parse-st').style.display='none';
+      nModo('manual'); renderNSvc();
+    } catch(err) { document.getElementById('n-parse-msg').textContent='Erro: '+err.message; }
+  };
+  reader.readAsDataURL(f);
+}
+
+function nValidate() {
+  const odata=v('n-odata'), nfdata=v('n-nfdata');
+  const oval=60; // fixo
+  const errs=[];
+  if(odata&&nfdata){
+    if(nfdata<=odata) errs.push('✗ Data da NF deve ser POSTERIOR à data do orçamento ('+fD(odata)+').');
+    const venc=addDias(odata,oval);
+    if(nfdata>venc) errs.push('✗ Data da NF ('+fD(nfdata)+') fora do prazo — orçamento vence em '+fD(venc)+'.');
+  }
+  // Validar datas concorrentes — apenas checar se são posteriores à NF
+  const dc1=v('n-odata-c1'), dc2=v('n-odata-c2');
+  const msg = errs.length
+    ? `<div class="vbox"><div class="vbox-title">⚠ Regras da DRE</div>${errs.map(e=>`<div class="vline">${e}</div>`).join('')}</div>`
+    : (odata&&nfdata?'<div class="al aok mb8">✓ Datas válidas.</div>':'');
+  const inl = document.getElementById('n-val-errs-inline'); if(inl) inl.innerHTML=msg;
+  const box = document.getElementById('n-val-errs');        if(box) box.innerHTML=msg;
+  return errs.length===0;
+}
+
+function nBuildResume() {
+  const tot=S.nf.itens ? S.nf.itens.reduce((s,i)=>s+i.qtd*i.valorUnitario,0)
+    : S.nf.cnaes.reduce((s,c)=>s+c.servicos.reduce((ss,sv)=>ss+(parseFloat(sv.valor)||0),0),0);
+  document.getElementById('n-total-fin').textContent='R$ '+fR(tot);
+  const cli=S.nf.cliente;
+  document.getElementById('n-resumo').innerHTML=DOMPurify.sanitize(`<div class="g2" style="font-size:12px;margin-bottom:8px">
+    <div><span class="mut">Cliente: </span><strong>${cli?cli.nome2:'—'}</strong></div>
+    <div><span class="mut">Concorrentes: </span><strong>${S.nf.chips.join(', ')||'—'}</strong></div>
+    <div><span class="mut">Itens: </span><strong>${(S.nf.itens||S.nf.cnaes).length}</strong></div>
+    <div><span class="mut">Orçamento Nº: </span><strong>${v('n-onum')||'—'}</strong></div>
+  </div>`);
+  nValidate();
+}
+
+
+// ================================================================
+// IA — VARIAÇÕES
+// ================================================================
+
+// ================================================================
+// VARIAÇÕES — IR PARA ABA + RENDERIZAR TABELA
+// ================================================================
+async function dsIrVariacoes() {
+  if(!S.danfe.itens.length){toast('Adicione pelo menos 1 item.', 'warn'); return;}
+  if(S.danfe.chips.length!==2){toast('Selecione exatamente 2 concorrentes.', 'warn'); return;}
+  if(!S.danfe.cliente){toast('Selecione um cliente.', 'warn'); return;}
+  dsGo(2);
+  document.getElementById('d-vars-loading').style.display='block';
+  document.getElementById('d-vars-content').style.display='none';
+  try {
+    S.danfe.vars = await gerarVars(S.danfe.itens.map(i=>i.produto||i.descricao||''), S.danfe.chips, 'material');
+    renderVarsTable('d-vars-thead','d-vars-tbody', S.danfe.itens, S.danfe.chips, S.danfe.vars, 'd');
+    document.getElementById('d-vars-loading').style.display='none';
+    document.getElementById('d-vars-content').style.display='block';
+  } catch(err) {
+    document.getElementById('d-vars-loading').style.display='none';
+    toast('Erro ao gerar variações: '+err.message, 'err', 6000);
+    dsGo(1);
+  }
+}
+
+async function nsIrVariacoes() {
+  const itens = (S.nf.itens||[]);
+  if(!itens.length){toast('Adicione pelo menos 1 item.', 'warn'); return;}
+  if(S.nf.chips.length!==2){toast('Selecione exatamente 2 concorrentes.', 'warn'); return;}
+  if(!S.nf.cliente){toast('Selecione um cliente.', 'warn'); return;}
+  const descricoes = itens.map(i=>i.produto||i.descricao||'').filter(s=>s.trim());
+  if(!descricoes.length){toast('Preencha a descrição dos itens antes de gerar variações.', 'warn'); return;}
+  nsGo(2);
+  document.getElementById('n-vars-loading').style.display='block';
+  document.getElementById('n-vars-content').style.display='none';
+  try {
+    S.nf.vars = await gerarVars(descricoes, S.nf.chips, 'servico');
+    renderVarsTable('n-vars-thead','n-vars-tbody', itens, S.nf.chips, S.nf.vars, 'n');
+    document.getElementById('n-vars-loading').style.display='none';
+    document.getElementById('n-vars-content').style.display='block';
+  } catch(err) {
+    document.getElementById('n-vars-loading').style.display='none';
+    toast('Erro ao gerar variações: '+err.message, 'err', 6000);
+    nsGo(1);
+  }
+}
+
+function renderVarsTable(theadId, tbodyId, itens, chips, vars, prefix) {
+  const thead = document.getElementById(theadId);
+  const tbody = document.getElementById(tbodyId);
+  if(!thead||!tbody) return;
+
+  // Cabeçalho: Item | C1 Descrição | C1 Valor | C2 Descrição | C2 Valor
+  const c1 = CONC[chips[0]]?.nome.split(' ').slice(0,2).join(' ') || chips[0];
+  const c2 = CONC[chips[1]]?.nome.split(' ').slice(0,2).join(' ') || chips[1];
+  thead.innerHTML = `<tr>
+    <th style="width:40px">#</th>
+    <th>${c1} — Descrição</th>
+    <th style="width:90px">${c1} — Valor</th>
+    <th>${c2} — Descrição</th>
+    <th style="width:90px">${c2} — Valor</th>
+  </tr>`;
+
+  tbody.innerHTML = itens.map((item, i) => {
+    const desc = item.produto || item.descricao || '';
+    const v1 = getVar(vars, desc, chips[0]);
+    const v2 = getVar(vars, desc, chips[1]);
+    const vu = parseFloat(item.valorUnitario)||0;
+    const pctMin = 5, pctMax = 25;
+    const vl1 = (vu * (1 + (pctMin + Math.random()*(pctMax-pctMin))/100)).toFixed(2);
+    const vl2 = (vu * (1 + (pctMin + Math.random()*(pctMax-pctMin))/100)).toFixed(2);
+    return `<tr>
+      <td><span class="tag ty">${i+1}</span></td>
+      <td><input type="text" value="${v1.replace(/"/g,'&quot;')}" style="width:100%;font-size:11px"
+        oninput="updateVar(window['vars_${prefix}'],${JSON.stringify(desc)},'${chips[0]}',this.value)"></td>
+      <td><span class="mono" style="font-size:11px">R$ ${fR(parseFloat(vl1))}</span></td>
+      <td><input type="text" value="${v2.replace(/"/g,'&quot;')}" style="width:100%;font-size:11px"
+        oninput="updateVar(window['vars_${prefix}'],${JSON.stringify(desc)},'${chips[1]}',this.value)"></td>
+      <td><span class="mono" style="font-size:11px">R$ ${fR(parseFloat(vl2))}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Expor vars no window para os onchange
+  window['vars_'+prefix] = vars;
+}
+
+function updateVar(vars, original, cid, newVal) {
+  if(!vars?.variacoes) return;
+  const entry = vars.variacoes.find(x=>x.original===original);
+  if(entry) entry[cid] = newVal;
+}
+
+async function gerarVars(itens, chips, tipo) {
+  if(!itens.length) return {variacoes:[]};
+  const isMaterial = tipo !== 'servico';
+  const prompt = isMaterial
+    ? `Gere duas variações de descrição para cada material. JSON puro sem markdown.
+Regras OBRIGATÓRIAS para ambas as variações:
+- Manter exatamente as mesmas quantidades, medidas, especificações e unidades
+- Não incluir marcas, fabricantes ou características não mencionadas
+- As duas variações devem ser diferentes entre si e diferentes do original
+- Ser CURTO e OBJETIVO — máximo 1 linha por item
+
+Variação 1 (chave "${chips[0]}"): linguagem técnica, reformular completamente, conciso.
+Variação 2 (chave "${chips[1]}"): linguagem comercial simples, estrutura diferente da var1, conciso.
+
+Formato: {"variacoes":[{"original":"...","${chips[0]}":"...","${chips[1]}":"..."}]}
+
+Itens:
+${itens.map((x,i)=>`${i+1}. ${x}`).join('\n')}`
+    : `Gere duas variações de descrição para cada serviço. JSON puro sem markdown.
+Regras OBRIGATÓRIAS para ambas as variações:
+- Manter 100% do escopo original — não adicionar nem remover atividades
+- Não alterar quantidades, medidas ou características
+- Não usar o termo "Manutenção em"
+- As duas variações devem ser diferentes entre si e diferentes do original
+- Ser CURTO e OBJETIVO — máximo 1 linha por item
+
+Variação 1 (chave "${chips[0]}"): linguagem técnica, reformular completamente, manter ambientes citados.
+Variação 2 (chave "${chips[1]}"): linguagem comercial simples, estrutura diferente da var1, encerrar com "na unidade escolar".
+
+Formato: {"variacoes":[{"original":"...","${chips[0]}":"...","${chips[1]}":"..."}]}
+
+Itens:
+${itens.map((x,i)=>`${i+1}. ${x}`).join('\n')}`;
+
+  const resp = await fetch('/.netlify/functions/claude', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:6000,
+      messages:[{role:'user', content:prompt}]})
+  });
+
+  // Tratar resposta não-JSON (ex: HTML de erro do Netlify)
+  const rawText = await resp.text();
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch(e) {
+    if(rawText.includes('<html') || rawText.includes('<HTML')) {
+      throw new Error('Serviço temporariamente indisponível. Tente novamente em instantes.');
+    }
+    throw new Error('Resposta inválida do servidor: '+rawText.substring(0,100));
+  }
+  if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+  try {
+    return parseJsonRobusto(data.content.map(b=>b.text||'').join(''));
+  } catch(e) {
+    return {variacoes: itens.map(orig=>({original:orig,[chips[0]]:orig,[chips[1]]:orig}))};
+  }
+}
+
+function getVar(vars, orig, cid) {
+  if(!vars?.variacoes) return orig;
+  const origNorm = (orig||'').trim().toLowerCase();
+  const entry = vars.variacoes.find(x => (x.original||'').trim().toLowerCase() === origNorm);
+  return entry ? (entry[cid] || orig) : orig;
+}
+
+
+
+async function salvarProcManual(tipo) {
+  const btnId = tipo === 'danfe' ? 'd-btn-salvar' : 'n-btn-salvar';
+  const btn = document.getElementById(btnId);
+  const itens = tipo === 'danfe' ? S.danfe.itens : (S.nf.itens||[]);
+  const cli   = tipo === 'danfe' ? S.danfe.cliente : S.nf.cliente;
+  const chips = tipo === 'danfe' ? S.danfe.chips : S.nf.chips;
+
+  if(!itens.length){ toast('Adicione pelo menos 1 item antes de salvar.', 'warn'); return; }
+  if(chips.length !== 2){ toast('Selecione 2 concorrentes antes de salvar.', 'warn'); return; }
+
+  const payload = {
+    tipo,
+    nfnum:     v(tipo==='danfe'?'d-nfnum':'n-nfnum') || 'S/N',
+    onum:      v(tipo==='danfe'?'d-onum':'n-onum')   || '',
+    data:      v(tipo==='danfe'?'d-odata':'n-odata')  || '',
+    nfdata:    v(tipo==='danfe'?'d-nfdata':'n-nfdata')|| '',
+    chips:     [...chips],
+    vencedora: (tipo==='danfe'?S.danfe.vencedora:S.nf.vencedora) || 'EGF',
+    itens:     tipo==='danfe' ? JSON.parse(JSON.stringify(itens)) : null,
+    nfItens:   tipo==='nfserv' ? JSON.parse(JSON.stringify(itens)) : null,
+    vars:      (tipo==='danfe'?S.danfe.vars:S.nf.vars) ? JSON.parse(JSON.stringify(tipo==='danfe'?S.danfe.vars:S.nf.vars)) : null,
+    cliente:   cli ? JSON.parse(JSON.stringify(cli)) : null,
+    clienteId: cli?.id || null,
+    escola:    cli?.nome2 || 'Sem cliente',
+    total:     itens.reduce((s,i)=>s+i.qtd*(parseFloat(i.valorUnitario)||0), 0),
+  };
+
+  if(btn){ btn.disabled=true; btn.textContent='Salvando...'; }
+  try {
+    await salvarProcesso(tipo, payload);
+    // Marcar como salvo para não mostrar modal ao sair
+    if(tipo === 'danfe') S.danfe.salvo = true; else S.nf.salvo = true;
+    if(btn){ btn.textContent='✓ Salvo!'; btn.style.background='var(--grn)'; }
+    setTimeout(()=>{ if(btn){ btn.disabled=false; btn.textContent='💾 Salvar processo'; btn.style.background=''; } }, 2500);
+  } catch(e) {
+    if(btn){ btn.disabled=false; btn.textContent='💾 Salvar processo'; }
+    toast('Erro ao salvar: '+e.message, 'err', 6000);
+  }
+}
+
+// ================================================================
+// PROCESSOS
+// ================================================================
+async function salvarProcesso(tipo, payload) {
+  const proc = {
+    id:        String(payload.id || Date.now()),
+    tipo,
+    nfnum:     payload.nfnum     || 'S/N',
+    onum:      payload.onum      || '',
+    escola:    payload.escola    || 'Sem cliente',
+    clienteId: payload.clienteId || null,
+    cliente:   payload.cliente   || null,
+    data:      payload.data      || '',
+    nfdata:    payload.nfdata    || '',
+    chips:     payload.chips     || [],
+    vencedora: payload.vencedora || 'EGF',
+    itens:     payload.itens     || null,
+    nfItens:   payload.nfItens   || null,
+    vars:      payload.vars      || null,
+    total:     payload.total     || 0,
+    savedAt:   new Date().toISOString(),
+  };
+
+  // Atualizar local state
+  const existing = S.processos.findIndex(p=>String(p.nfnum)===String(proc.nfnum)&&p.tipo===proc.tipo);
+  if(existing>=0) { proc.id=S.processos[existing].id; S.processos[existing]=proc; }
+  else S.processos.unshift(proc);
+
+  // Salvar no Firestore (com fallback localStorage)
+  try { await FS.salvarProc(proc); sb('✓ Processo salvo'); }
+  catch(e) { localStorage.setItem('egf_proc',JSON.stringify(S.processos)); sb('✓ Salvo localmente'); }
+  renderProc();
+}
+
+function renderProc(filtro='') {
+  const lista=document.getElementById('proc-lista');
+  let procs=[...S.processos];
+  if(filtro){
+    const q=filtro.toLowerCase();
+    procs=procs.filter(p=>
+      (p.nfnum||'').toLowerCase().includes(q) ||
+      (p.escola||'').toLowerCase().includes(q) ||
+      (p.onum||'').toLowerCase().includes(q) ||
+      (p.chips||[]).join(' ').toLowerCase().includes(q)
+    );
+  }
+  if(!procs.length){lista.innerHTML='<div class="mut" style="padding:24px 0;text-align:center">Nenhum processo salvo.</div>';return;}
+  lista.innerHTML=procs.map(p=>`
+    <div class="proc-item" onclick="abrirProc('${p.id}')">
+      <div class="proc-nf"><span class="tag ty">${esc(p.nfnum)}</span></div>
+      <div class="proc-info">
+        <div class="proc-escola">${esc(p.escola)}</div>
+        <div class="proc-meta">${p.tipo==='danfe'?'DANFE Material':'NF Serviço'} · Orc. ${esc(p.onum)||'—'} · ${fD(p.data)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-weight:700;font-size:13px">R$ ${fR(p.total)}</div>
+        <div class="mut">${p.chips?.join(' + ')||''}</div>
+      </div>
+      <span class="tag ${p.tipo==='danfe'?'ty':'tg'}">${p.tipo==='danfe'?'Material':'Serviço'}</span>
+    </div>`).join('');
+}
+
+function filtrarProc(q) { renderProc(q); }
+
+function abrirProc(id) {
+  const p=S.processos.find(x=>String(x.id)===String(id));
+  if(!p) return;
+  // Guardar referência do processo sendo editado
+  window._procEditId = String(p.id);
+  document.getElementById('proc-modal-title').textContent=`Processo NF ${p.nfnum} — ${p.escola}`;
+
+  const itens = p.tipo==='danfe' ? (p.itens||[]) : (p.nfItens||[]);
+  const isMat = p.tipo==='danfe';
+
+  let body=`
+    <div class="g2 mb12" style="font-size:12px">
+      <div><span class="mut">Tipo: </span><strong>${p.tipo==='danfe'?'DANFE Material':'NF Serviço'}</strong></div>
+      <div><span class="mut">Escola: </span><strong>${p.escola}</strong></div>
+      <div><span class="mut">Nº NF: </span><strong class="mono">${p.nfnum}</strong></div>
+      <div><span class="mut">Concorrentes: </span><strong>${p.chips?.join(', ')||'—'}</strong></div>
+    </div>
+    <div class="g2 mb12">
+      <div class="field"><label>Data do orçamento</label><input type="date" id="pe-odata" value="${p.data||''}"></div>
+      <div class="field"><label>Data da NF</label><input type="date" id="pe-nfdata" value="${p.nfdata||''}"></div>
+    </div>
+    <div class="ct mb8">${isMat?'Itens de material':'Itens de serviço'}</div>
+    <div class="tw" style="margin-bottom:14px">
+      <table id="pe-itens-table">
+        <thead><tr><th>Cód</th><th>Descrição</th><th>Qtd</th><th>Und</th><th>Vl.Unit</th><th>Total</th></tr></thead>
+        <tbody id="pe-itens-tbody"></tbody>
+      </table>
+    </div>
+    <div id="pe-total" class="trow mb12"><div class="tl">Total</div><div class="tv" id="pe-total-val">R$ 0,00</div></div>
+  `;
+
+  body+=`<div class="flex gap8 jb mt16">
+    <button class="btn br bsm" id="btn-del-proc">Excluir processo</button>
+    <div class="flex gap8">
+      <button class="btn bd" id="btn-salvar-edicao">💾 Salvar alterações</button>
+      <button class="btn bg" id="btn-baixar-excel-proc">⬇ Baixar Excel</button>
+    </div>
+  </div>`;
+
+  document.getElementById('proc-modal-body').innerHTML=DOMPurify.sanitize(body);
+
+  // Bind botão excluir (DOMPurify remove onclick inline)
+  const btnDel = document.getElementById('btn-del-proc');
+  if(btnDel) btnDel.addEventListener('click', () => delProc(p.id));
+
+  const btnSalvar = document.getElementById('btn-salvar-edicao');
+  if(btnSalvar) btnSalvar.addEventListener('click', () => salvarEdicaoProc());
+
+  const btnExcel = document.getElementById('btn-baixar-excel-proc');
+  if(btnExcel) btnExcel.addEventListener('click', () => baixarExcelProc(p.id));
+
+  // Renderizar itens editáveis
+  renderProcItens(itens, isMat);
+
+  openOv('ov-proc');
+}
+
+function renderProcItens(itens, isMat) {
+  const tbody = document.getElementById('pe-itens-tbody');
+  if(!tbody) return;
+  let tot = 0;
+  tbody.innerHTML = itens.map((item, i) => {
+    const vt = (parseFloat(item.qtd)||1) * (parseFloat(item.valorUnitario)||0);
+    tot += vt;
+    return `<tr>
+      <td><span class="tag ${isMat?'ty':'tg'}">${esc(item.codigo)}</span></td>
+      <td><input type="text" value="${(item.produto||'').replace(/"/g,'&quot;')}" style="width:100%;font-size:11px" onchange="procEditItem(${i},'produto',this.value)"></td>
+      <td><input type="number" value="${item.qtd||1}" min="0.01" step="0.01" style="width:55px" onchange="procEditItem(${i},'qtd',parseFloat(this.value)||1);recalcProcTotal()"></td>
+      <td class="mut">${esc(item.unidade||'serviço')}</td>
+      <td><input type="number" value="${item.valorUnitario||0}" min="0" step="0.01" style="width:75px" onchange="procEditItem(${i},'valorUnitario',parseFloat(this.value)||0);recalcProcTotal()"></td>
+      <td class="mono" id="pe-vt-${i}">R$ ${fR(vt)}</td>
+    </tr>`;
+  }).join('');
+  const tv = document.getElementById('pe-total-val');
+  if(tv) tv.textContent = 'R$ ' + fR(tot);
+}
+
+function procEditItem(idx, field, val) {
+  const p = S.processos.find(x=>String(x.id)===String(window._procEditId));
+  if(!p) return;
+  const itens = p.tipo==='danfe' ? p.itens : p.nfItens;
+  if(itens && itens[idx]) itens[idx][field] = val;
+}
+
+function recalcProcTotal() {
+  const p = S.processos.find(x=>String(x.id)===String(window._procEditId));
+  if(!p) return;
+  const itens = p.tipo==='danfe' ? (p.itens||[]) : (p.nfItens||[]);
+  let tot = 0;
+  itens.forEach((item, i) => {
+    const vt = (parseFloat(item.qtd)||1) * (parseFloat(item.valorUnitario)||0);
+    tot += vt;
+    const el = document.getElementById('pe-vt-'+i);
+    if(el) el.textContent = 'R$ ' + fR(vt);
+  });
+  p.total = tot;
+  const tv = document.getElementById('pe-total-val');
+  if(tv) tv.textContent = 'R$ ' + fR(tot);
+}
+
+async function salvarEdicaoProc() {
+  const p = S.processos.find(x=>String(x.id)===String(window._procEditId));
+  if(!p) return;
+  p.data = document.getElementById('pe-odata')?.value || p.data;
+  p.nfdata = document.getElementById('pe-nfdata')?.value || p.nfdata;
+  const itens = p.tipo==='danfe' ? (p.itens||[]) : (p.nfItens||[]);
+  p.total = itens.reduce((s,i)=>s+(parseFloat(i.qtd)||1)*(parseFloat(i.valorUnitario)||0), 0);
+  try { await FS.salvarProc(p); } catch(e){ localStorage.setItem('egf_proc', JSON.stringify(S.processos)); }
+  renderProc(); sb();
+  const btn = document.querySelector('#proc-modal-body .btn.bd');
+  if(btn){ btn.textContent='✓ Salvo!'; btn.style.background='var(--grn)'; setTimeout(()=>{ btn.textContent='💾 Salvar alterações'; btn.style.background=''; }, 2000); }
+}
+
+async function baixarExcelProc(id) {
+  const p = S.processos.find(x=>String(x.id)===String(id));
+  if(!p) return;
+  // Atualizar datas antes de baixar
+  p.data = document.getElementById('pe-odata')?.value || p.data;
+  p.nfdata = document.getElementById('pe-nfdata')?.value || p.nfdata;
+  const itens = p.tipo==='danfe' ? (p.itens||[]) : (p.nfItens||[]);
+  const payload = {
+    itens,
+    cliente: p.cliente,
+    onum: p.onum,
+    tipo: p.tipo==='danfe'?'Material':'Mão de obra',
+    chips: p.chips,
+    vars: p.vars,
+    odata: p.data,
+  };
+  const prefix = p.tipo==='danfe' ? 'Orcamentos' : 'NF_Orcamentos';
+  const loadId = 'proc-modal-body';
+  // Usar _chamarApiExcel mas sem alterar UI do modal
+  const btn = document.querySelector('#proc-modal-body .btn.bg');
+  if(btn){ btn.disabled=true; btn.textContent='Gerando...'; }
+  try {
+    const resp = await fetch('https://engefal-excel-api.onrender.com/excel', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-API-Token': window.EXCEL_API_TOKEN || ''
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if(data.error) throw new Error(data.error);
+    const byteChars = atob(data.zip);
+    const byteArr = new Uint8Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) byteArr[i]=byteChars.charCodeAt(i);
+    const blob = new Blob([byteArr],{type:'application/zip'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=`${prefix}_${p.onum}.zip`; a.click();
+    URL.revokeObjectURL(url);
+    if(btn){ btn.disabled=false; btn.textContent='⬇ Baixar Excel'; }
+  } catch(err) {
+    if(btn){ btn.disabled=false; btn.textContent='⬇ Baixar Excel'; }
+    toast('Erro: '+err.message, 'err', 6000);
+  }
+}
+
+async function delProc(id) {
+  window._delProcId = String(id);
+  closeOv('ov-proc');
+  openOv('ov-confirma-del');
+}
+
+async function confirmarDelProc() {
+  const id = window._delProcId;
+  if(!id) return;
+  closeOv('ov-confirma-del');
+  S.processos=S.processos.filter(p=>String(p.id)!==String(id));
+  try { await FS.deletarProc(id); } catch(e){ localStorage.setItem('egf_proc',JSON.stringify(S.processos)); }
+  renderProc(); sb();
+}
+
+function regenarProc(id) {
+  const p=S.processos.find(x=>String(x.id)===String(id));
+  if(!p) return;
+  closeOv('ov-proc');
+  if(p.tipo==='danfe') {
+    S.danfe.itens=JSON.parse(JSON.stringify(p.itens));
+    S.danfe.cliente=S.clientes.find(c=>String(c.id)===String(p.clienteId))||null;
+    S.danfe.chips=[...p.chips];
+    document.getElementById('d-onum').value=p.onum||'';
+    document.getElementById('d-odata').value=p.data||'';
+    document.getElementById('d-nfnum').value=p.nfnum||'';
+    document.getElementById('d-nfdata').value=p.nfdata||'';
+    document.getElementById('d-pmin').value=p.pmin||'5';
+    document.getElementById('d-pmax').value=p.pmax||'25';
+    // assinatura é fixa (Felipe Gomes), não precisa restaurar
+    if(S.danfe.cliente) document.getElementById('d-cli-disp').innerHTML=DOMPurify.sanitize(cliDisp(S.danfe.cliente));
+    document.querySelectorAll('#d-chips .chip').forEach(c=>{
+      c.classList.toggle('on',p.chips.includes(c.dataset.id));
+    });
+    dModo('manual'); renderDItens(); dsGo(1);
+    goSec('danfe',document.querySelector('.tb'));
+  } else {
+    S.nf.itens=JSON.parse(JSON.stringify(p.nfItens||[]));
+    S.nf.cnaes=[];
+    S.nf.cliente=S.clientes.find(c=>String(c.id)===String(p.clienteId))||null;
+    S.nf.chips=[...p.chips];
+    document.getElementById('n-onum').value=p.onum||'';
+    document.getElementById('n-odata').value=p.data||'';
+    document.getElementById('n-nfnum').value=p.nfnum||'';
+    document.getElementById('n-nfdata').value=p.nfdata||'';
+    document.getElementById('n-pmin').value=p.pmin||'5';
+    document.getElementById('n-pmax').value=p.pmax||'25';
+    if(S.nf.cliente) document.getElementById('n-cli-disp').innerHTML=DOMPurify.sanitize(cliDisp(S.nf.cliente));
+    document.querySelectorAll('#n-chips .chip').forEach(c=>{
+      c.classList.toggle('on',p.chips.includes(c.dataset.id));
+    });
+    nModo('manual'); renderNSvc(); nsGo(1);
+    goSec('nfserv',document.querySelectorAll('.tb')[1]);
+  }
+}
+
+// ================================================================
+// CLIENTES
+// ================================================================
+function renderCliPage(filtro='') {
+  const tbody=document.getElementById('cli-tbody');
+  let lista=[...S.clientes];
+  if(filtro){const q=filtro.toLowerCase();lista=lista.filter(c=>(c.nome2||'').toLowerCase().includes(q)||(c.cnpj||'').includes(q)||(c.nome||'').toLowerCase().includes(q)||(c.contato||'').toLowerCase().includes(q));}
+  tbody.innerHTML=lista.map(c=>`<tr>
+    <td><strong>${esc(c.nome2)||'-'}</strong></td>
+    <td style="font-size:11px">${esc((c.nome||'').substring(0,50))}</td>
+    <td class="mono">${esc(c.cnpj||'')}</td>
+    <td>${esc(c.contato||'')}</td>
+    <td>${c.ativo?'<span class="tag tg">Ativo</span>':'<span class="tag tm">Inativo</span>'}</td>
+    <td><button class="btn bo bsm" onclick="editCliente(${c.id})">Editar</button></td>
+  </tr>`).join('');
+}
+
+function filtrarCli(q) { renderCliPage(q); }
+
+function openCliModal(target) {
+  S.cliTarget=target;
+  document.getElementById('cli-modal-busca').value='';
+  renderCliModal(''); openOv('ov-cli');
+}
+
+function renderCliModal(filtro) {
+  const lista=document.getElementById('cli-modal-lista');
+  let clientes=[...S.clientes];
+  if(filtro){const q=filtro.toLowerCase();clientes=clientes.filter(c=>(c.nome2||'').toLowerCase().includes(q)||(c.nome||'').toLowerCase().includes(q)||(c.cnpj||'').includes(q));}
+  lista.innerHTML=clientes.map(c=>`<div class="cli" onclick="selCli(${c.id})">
+    <div class="clname">${esc(c.nome2||c.nome)}</div>
+    <div class="clsub">${esc(c.cnpj||'')} · ${esc(c.contato||'')} · ${esc(c.tel||'')} </div>
+  </div>`).join('');
+}
+
+function filtrarCliModal(q) { renderCliModal(q); }
+
+function selCli(id) {
+  const c=S.clientes.find(x=>String(x.id)===String(id)); if(!c) return;
+  if(S.cliTarget==='d'){S.danfe.cliente=c;document.getElementById('d-cli-disp').innerHTML=DOMPurify.sanitize(cliDisp(c));}
+  else{S.nf.cliente=c;document.getElementById('n-cli-disp').innerHTML=DOMPurify.sanitize(cliDisp(c));}
+  closeOv('ov-cli');
+}
+
+function cliDisp(c) {
+  return `<div class="g2" style="font-size:12px">
+    <div><span class="mut">Nome: </span><strong>${c.nome||'-'}</strong></div>
+    <div><span class="mut">Escola: </span><strong>${c.nome2||'-'}</strong></div>
+    <div><span class="mut">CNPJ: </span><span class="mono">${c.cnpj||'-'}</span></div>
+    <div><span class="mut">Contato: </span>${c.contato||'-'} · ${c.tel||''}</div>
+    <div style="grid-column:1/-1"><span class="mut">Endereço: </span>${c.end||'-'}</div>
+  </div>`;
+}
+
+function openNovoCliente() {
+  S.editCliId=null;
+  document.getElementById('nc-title').textContent='Novo cliente';
+  ['nc-nome','nc-nome2','nc-cnpj','nc-cont','nc-end','nc-tel','nc-email'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nc-del').style.display='none';
+  openOv('ov-novo-cli');
+}
+
+function editCliente(id) {
+  const c=S.clientes.find(x=>String(x.id)===String(id)); if(!c) return;
+  S.editCliId=id;
+  document.getElementById('nc-title').textContent='Editar cliente';
+  document.getElementById('nc-nome').value=c.nome||'';
+  document.getElementById('nc-nome2').value=c.nome2||'';
+  document.getElementById('nc-cnpj').value=c.cnpj||'';
+  document.getElementById('nc-cont').value=c.contato||'';
+  document.getElementById('nc-end').value=c.end||'';
+  document.getElementById('nc-tel').value=c.tel||'';
+  document.getElementById('nc-email').value=c.email||'';
+  document.getElementById('nc-del').style.display='inline-flex';
+  openOv('ov-novo-cli');
+}
+
+async function saveCliente() {
+  const c={nome:v('nc-nome'),nome2:v('nc-nome2'),cnpj:v('nc-cnpj'),contato:v('nc-cont'),end:v('nc-end'),tel:v('nc-tel'),email:v('nc-email'),ativo:true};
+  if(S.editCliId){
+    const i=S.clientes.findIndex(x=>String(x.id)===String(S.editCliId));
+    if(i>=0){ c.id=S.editCliId; S.clientes[i]={...S.clientes[i],...c}; }
+  } else {
+    c.id=Date.now(); S.clientes.push(c);
+  }
+  try { await FS.salvarCliente(c); } catch(e){ localStorage.setItem('egf_cli',JSON.stringify(S.clientes)); }
+  closeOv('ov-novo-cli'); renderCliPage(); sb();
+}
+
+async function delCliente() {
+  closeOv('ov-novo-cli');
+  openOv('ov-confirma-del-cli');
+}
+
+async function confirmarDelCliente() {
+  const id = S.editCliId;
+  closeOv('ov-confirma-del-cli');
+  S.clientes=S.clientes.filter(x=>x.id!==id);
+  try { await FS.deletarCliente(id); } catch(e){ localStorage.setItem('egf_cli',JSON.stringify(S.clientes)); }
+  renderCliPage(); sb();
+}
+
+// ================================================================
+// CHIPS
+// ================================================================
+function toggleChip(el, prefix) {
+  const id=el.dataset.id;
+  const arr=prefix==='d'?S.danfe.chips:S.nf.chips;
+  if(el.classList.contains('on')){
+    el.classList.remove('on');
+    if(prefix==='d')S.danfe.chips=arr.filter(x=>x!==id); else S.nf.chips=arr.filter(x=>x!==id);
+  } else {
+    if(arr.length>=2){toast('Máximo 2 concorrentes.', 'warn'); return;}
+    el.classList.add('on'); arr.push(id);
+  }
+  const cur=prefix==='d'?S.danfe.chips:S.nf.chips;
+  const h=document.getElementById(prefix==='d'?'d-chip-h':'n-chip-h');
+  h.textContent=cur.length===2?'✓ Selecionados: '+cur.join(' + '):'Selecione exatamente 2 ('+cur.length+'/2)';
+  h.style.color=cur.length===2?'var(--grn)':'var(--mut)';
+}
+
+function selecionarVencedora(el, prefix) {
+  const id = el.dataset.id;
+  // Marcar chip selecionado
+  const wrapId = prefix === 'd' ? 'd-winner-chips' : 'n-winner-chips';
+  document.querySelectorAll(`#${wrapId} .chip`).forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  // Salvar no estado
+  if(prefix === 'd') S.danfe.vencedora = id; else S.nf.vencedora = id;
+  // Atualizar label da data do orçamento
+  const nomeVenc = id === 'EGF' ? 'Engefal' : (CONC[id]?.nome?.split(' ')[0] || id);
+  const labelEl = document.getElementById(prefix === 'd' ? 'd-odata-label' : 'n-odata-label');
+  if(labelEl) labelEl.textContent = `Data do orçamento (${nomeVenc})`;
+  // Atualizar chips de concorrentes: mostrar/esconder a vencedora
+  const chipsId = prefix === 'd' ? 'd-chips' : 'n-chips';
+  document.querySelectorAll(`#${chipsId} .chip`).forEach(c => {
+    if(c.dataset.id === id) {
+      c.style.display = 'none';
+      c.classList.remove('on');
+      if(prefix === 'd') S.danfe.chips = S.danfe.chips.filter(x => x !== id);
+      else S.nf.chips = S.nf.chips.filter(x => x !== id);
+    } else {
+      c.style.display = '';
+    }
+  });
+  // Atualizar label de concorrentes
+  const cur = prefix === 'd' ? S.danfe.chips : S.nf.chips;
+  const h = document.getElementById(prefix === 'd' ? 'd-chip-h' : 'n-chip-h');
+  if(h) {
+    h.textContent = cur.length===2?'✓ Selecionados: '+cur.join(' + '):'Selecione exatamente 2 ('+cur.length+'/2)';
+    h.style.color = cur.length===2?'var(--grn)':'var(--mut)';
+  }
+}
+
+// ================================================================
+// PDF CARDS
+// ================================================================
+
+// ================================================================
+const EXCEL_TEMPLATES = {
+  EGF: '/templates/Engefal.xlsx',
+  JB:  '/templates/JB.xlsx',
+  LC4: '/templates/LC4.xlsx',
+  MF:  '/templates/MF.xlsx',
+  RPL: '/templates/RPL.xlsx',
+  WB:  '/templates/WB.xlsx',
+  WR:  '/templates/WR.xlsx',
+};
+
+// Mapeamento de células de itens por concorrente
+// Para cada concorrente: descCol=coluna descrição, qtdCol=col qtd, vlCol=col vlUnit, totCol=col total, startRow=linha inicio
+const EXCEL_MAP = {
+  EGF: {sheet:'EGF', descCol:'G', qtdCol:'E', vlCol:'H', totCol:'I', startRow:18, clienteCell:'D9', escolaCell:'D10', cnpjCell:'G10', endCell:'I9', contaCell:'G9', telCell:'I10', onumCell:'I5', odataCell:'I3', tipoCell:'H15'},
+  JB:  {sheet:'JB',  descCol:'C', qtdCol:'D', vlCol:'E', totCol:'G', startRow:24},
+  LC4: {sheet:'L.C 4R', descCol:'B', qtdCol:'C', vlCol:'D', totCol:'E', startRow:10},
+  MF:  {sheet:'MF',  descCol:'C', qtdCol:'D', vlCol:'E', totCol:'F', startRow:10},
+  RPL: {sheet:'RPL', descCol:'C', qtdCol:'D', vlCol:'E', totCol:'F', startRow:19},
+  WB:  {sheet:'WB',  descCol:'B', qtdCol:'C', vlCol:'D', totCol:'E', startRow:8},
+  WR:  {sheet:'WR',  descCol:'C', qtdCol:'D', vlCol:'E', totCol:'F', startRow:24},
+};
+
+// Datas para os concorrentes (células específicas)
+const EXCEL_DATE_CELLS = {
+  JB:  {dayCell:'L26', monthCell:'L27', yearCell:'L28'},   // texto formatado
+  LC4: {dateCell:'B51'},  // CONCATENATE São Paulo, DD/MM/AAAA
+  MF:  {dateCell:'B53'},
+  RPL: {dayCell:'N21', monthCell:'N22', yearCell:'N23', dateCell:'C58'},
+  WB:  {dateCell:'E47'},  // serial date
+  WR:  {dateCell:'B60'},
+};
+
+// Variações de percentual por concorrente (retiradas dos Excel originais)
+const EXCEL_VARS = {
+  JB:  [0.21,0.41,0.61,0.81,0.61,0.11,0.21,0.41,0.61,0.81,0.61,0.11,0.21,0.41,0.61,0.81,0.61,0.11,0.21,0.41,0.61,0.81,0.61,0.11,0.21,0.41,0.61,0.81,0.61,0.11,0.21,0.41],
+  LC4: [0.97,0.087,0.077,0.067,0.57,0.17,0.097,0.087,0.077,0.067,0.057,0.17,0.097,0.087,0.077,0.067,0.057,0.17,0.097,0.087,0.077,0.067,0.057,0.17,0.097,0.087,0.077,0.067,0.057,0.17,0.097,0.087],
+  MF:  [0.12,0.032,0.52,0.082,0.012,0.012,0.032,0.52,0.082,0.012,0.012,0.032,0.52,0.082,0.012,0.012,0.032,0.52,0.082,0.012,0.012,0.032,0.52,0.082,0.012,0.012,0.032,0.52,0.082,0.012,0.012,0.032],
+  RPL: [0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12,0.32,0.62,0.92,0.12],
+  WB:  [0.12,0.32,0.062,0.092,0.162,0.12,0.032,0.062,0.92,0.162,0.012,0.032,0.062,0.092,0.162,0.012,0.032,0.062,0.092,0.162,0.012,0.032,0.062,0.092,0.162,0.012,0.032,0.062,0.092,0.162,0.012,0.032],
+  WR:  [0.67,0.067,0.087,0.097,0.13,0.17,0.067,0.087,0.097,0.13,0.067,0.067,0.087,0.097,0.13,0.067,0.067,0.087,0.097,0.13,0.067,0.067,0.087,0.097,0.13,0.067,0.067,0.087,0.097,0.13,0.067,0.067],
+};
+
+// Converte data JS para serial Excel
+function dateToExcelSerial(date) {
+  const start = new Date(1900, 0, 1);
+  const diff = Math.floor((date - start) / 86400000) + 2;
+  return diff;
+}
+
+// Carrega template Excel como ArrayBuffer
+async function loadTemplate(cid) {
+  const url = EXCEL_TEMPLATES[cid];
+  const resp = await fetch(url);
+  if(!resp.ok) throw new Error(`Template ${cid} não encontrado em ${url}`);
+  return await resp.arrayBuffer();
+}
+
+// Formata data como DD/MM/AAAA
+function fmtDate(date) {
+  return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
+}
+
+// Preenche EGF.xlsx com os dados do orçamento
+async function preencherEGF(itens, cli, odata, onum, tipo) {
+  const buf = await loadTemplate('EGF');
+  const wb = XLSX.read(buf, {type:'array', cellStyles:true});
+  const ws = wb.Sheets['EGF'];
+
+  const m = EXCEL_MAP.EGF;
+  // Data e número
+  ws[m.odataCell] = {v: dateToExcelSerial(odata), t:'n', z:'DD/MM/YYYY'};
+  ws[m.onumCell]  = {v: parseInt(onum)||0, t:'n'};
+  // Tipo (Material / Mão de obra)
+  ws[m.tipoCell]  = {v: tipo, t:'s'};
+  // Cliente
+  if(cli) {
+    ws[m.clienteCell] = {v: cli.nome||'', t:'s'};
+    if(ws[m.escolaCell]) ws[m.escolaCell] = {v: cli.nome2||'', t:'s'};
+    ws[m.cnpjCell]    = {v: cli.cnpj||'', t:'s'};
+    ws[m.endCell]     = {v: cli.end||'', t:'s'};
+    ws[m.contaCell]   = {v: cli.contato||'', t:'s'};
+    ws[m.telCell]     = {v: cli.tel||'', t:'s'};
+  }
+  // Itens — limpar linhas existentes e preencher
+  for(let i=0; i<35; i++) {
+    const row = m.startRow + i;
+    const it = itens[i];
+    if(it) {
+      ws[`E${row}`] = {v: it.qtd, t:'n'};
+      ws[`F${row}`] = {v: it.unidade||'Unid', t:'s'};
+      ws[`G${row}`] = {v: it.produto||it.descricao||'', t:'s'};
+      ws[`H${row}`] = {v: it.valorUnitario||0, t:'n', z:'#,##0.00'};
+      ws[`I${row}`] = {v: (it.qtd||1)*(it.valorUnitario||0), t:'n', z:'#,##0.00'};
+    } else {
+      ws[`E${row}`] = {v:'', t:'s'};
+      ws[`F${row}`] = {v:'', t:'s'};
+      ws[`G${row}`] = {v:'', t:'s'};
+      ws[`H${row}`] = {v:0, t:'n'};
+      ws[`I${row}`] = {v:0, t:'n'};
+    }
+  }
+  // Total
+  const total = itens.reduce((s,it)=>s+(it.qtd||1)*(it.valorUnitario||0),0);
+  ws['I53'] = {v: total, t:'n', z:'#,##0.00'};
+
+  return XLSX.write(wb, {type:'array', bookType:'xlsx'});
+}
+
+// Preenche planilha de concorrente com valores fixos
+async function preencherConcorrente(cid, itens, cli, dataConc, tipo, vars) {
+  const buf = await loadTemplate(cid);
+  const wb = XLSX.read(buf, {type:'array', cellStyles:true});
+  const sheetName = EXCEL_MAP[cid].sheet;
+  const ws = wb.Sheets[sheetName];
+  const m = EXCEL_MAP[cid];
+  const varPcts = EXCEL_VARS[cid] || [];
+
+  // Preencher cliente
+  const cliNome = cli ? cli.nome||'' : '';
+  const cliEnd  = cli ? cli.end||''  : '';
+  const cliCnpj = cli ? cli.cnpj||'' : '';
+  const cliContato = cli ? cli.contato||'' : '';
+  const cliTel  = cli ? cli.tel||''  : '';
+  const cliEscola = cli ? cli.nome2||'' : '';
+
+  if(cid==='JB') {
+    ws['C17'] = {v:`Cliente:  ${cliNome}`, t:'s'};
+    ws['C18'] = {v:`Endereço: ${cliEnd}`, t:'s'};
+    ws['C19'] = {v:`Contato: ${cliContato}`, t:'s'};
+    ws['C21'] = {v:`Segue abaixo nosso orçamento de: ${tipo}`, t:'s'};
+    // Data
+    const d = dataConc;
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    ws['C66'] = {v:`São Paulo, ${d.getDate()} de ${meses[d.getMonth()]} ${d.getFullYear()}`, t:'s'};
+  }
+  if(cid==='LC4') {
+    ws['B5'] = {v: cliNome, t:'s'};
+    ws['B6'] = {v: cliEnd, t:'s'};
+    ws['B7'] = {v: tipo, t:'s'};
+    const d = dataConc;
+    ws['B51'] = {v:`São Paulo, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`, t:'s'};
+  }
+  if(cid==='MF') {
+    ws['C5'] = {v: cliNome, t:'s'};
+    ws['B6'] = {v: cliEnd, t:'s'};
+    ws['B8'] = {v: tipo.toUpperCase(), t:'s'};
+    const d = dataConc;
+    ws['B53'] = {v:`São Paulo, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`, t:'s'};
+  }
+  if(cid==='RPL') {
+    ws['C12'] = {v: dateToExcelSerial(dataConc), t:'n', z:'DD/MM/YYYY'};
+    ws['C13'] = {v: cliCnpj, t:'s'};
+    ws['C14'] = {v: cliEscola, t:'s'};
+    ws['C15'] = {v: cliEnd, t:'s'};
+    ws['C16'] = {v:`Orçamento de:  ${tipo}`, t:'s'};
+    const d = dataConc;
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    ws['C58'] = {v:`${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`, t:'s'};
+  }
+  if(cid==='WB') {
+    ws['B3'] = {v: cliNome, t:'s'};
+    ws['B4'] = {v: cliEnd, t:'s'};
+    ws['B6'] = {v: tipo, t:'s'};
+    ws['E47'] = {v: dateToExcelSerial(dataConc), t:'n', z:'DD/MM/YYYY'};
+  }
+  if(cid==='WR') {
+    ws['C14'] = {v: cliNome, t:'s'};
+    ws['C15'] = {v: cliEnd, t:'s'};
+    ws['C16'] = {v: cliContato, t:'s'};
+    ws['C17'] = {v: cliTel, t:'s'};
+    ws['B22'] = {v: tipo, t:'s'};
+    const d = dataConc;
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    ws['B60'] = {v:`São Paulo, ${d.getDate()} ${meses[d.getMonth()]} de ${d.getFullYear()}`, t:'s'};
+  }
+
+  // Preencher itens com valores fixos (sem fórmulas)
+  let total = 0;
+  for(let i=0; i<35; i++) {
+    const row = m.startRow + i;
+    const it = itens[i];
+    const pct = varPcts[i % varPcts.length] || 0.1;
+    const desc = (vars && vars.variacoes) ? (vars.variacoes.find(x=>x.original===(it?it.produto||it.descricao:'')) || {})[cid] || (it?it.produto||it.descricao||'':'') : (it?it.produto||it.descricao||'':'');
+
+    if(it) {
+      const vu = parseFloat(((it.valorUnitario||0)*(1+pct)).toFixed(2));
+      const vt = parseFloat((vu*(it.qtd||1)).toFixed(2));
+      total += vt;
+      ws[`${m.descCol}${row}`] = {v: desc, t:'s'};
+      ws[`${m.qtdCol}${row}`]  = {v: it.qtd||1, t:'n'};
+      ws[`${m.vlCol}${row}`]   = {v: vu, t:'n', z:'#,##0.00'};
+      ws[`${m.totCol}${row}`]  = {v: vt, t:'n', z:'#,##0.00'};
+    } else {
+      ws[`${m.descCol}${row}`] = {v:'', t:'s'};
+      ws[`${m.qtdCol}${row}`]  = {v:'', t:'s'};
+      ws[`${m.vlCol}${row}`]   = {v:'', t:'s'};
+      ws[`${m.totCol}${row}`]  = {v:'', t:'s'};
+    }
+  }
+
+  // Total — célula específica por concorrente
+  const totCells = {JB:'G56',LC4:'E46',MF:'F45',RPL:'F51',WB:'E44',WR:'F57'};
+  if(totCells[cid]) ws[totCells[cid]] = {v: parseFloat(total.toFixed(2)), t:'n', z:'#,##0.00'};
+
+  return XLSX.write(wb, {type:'array', bookType:'xlsx'});
+}
+
+// Gera data de concorrente variando ±2-5 dias da data principal
+function dataConcorrente(base, idx) {
+  const d = new Date(base);
+  const variacao = (idx===0 ? -3 : 2) + (Math.random()>0.5?1:-1);
+  d.setDate(d.getDate() + variacao);
+  return d;
+}
+
+// ---- Chamada servidor Python para gerar Excel ----
+async function _chamarApiExcel(payload, prefix, onum, loadingId, genAreaId, loadMsgId) {
+  document.getElementById(genAreaId).style.display='none';
+  document.getElementById(loadingId).style.display='block';
+  document.getElementById(loadMsgId).textContent='Gerando arquivos Excel no servidor...';
+
+  // Aviso de cold start após 6s
+  const coldStartTimer = setTimeout(() => {
+    const el = document.getElementById(loadMsgId);
+    if(el) el.textContent='⏳ Servidor acordando... isso pode levar até 30 segundos.';
+  }, 6000);
+
+  try {
+    const resp = await fetch('https://engefal-excel-api.onrender.com/excel', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-API-Token': window.EXCEL_API_TOKEN || ''
+      },
+      body: JSON.stringify(payload)
+    });
+    clearTimeout(coldStartTimer);
+    const rawText = await resp.text();
+    let data;
+    try { data = JSON.parse(rawText); }
+    catch(e) {
+      if(rawText.includes('<html')||rawText.includes('<HTML'))
+        throw new Error('Servidor temporariamente indisponível. Aguarde e tente novamente.');
+      throw new Error('Resposta inválida do servidor.');
+    }
+    if(data.error) throw new Error(data.error);
+    // Converter base64 para blob e baixar
+    const byteChars = atob(data.zip);
+    const byteArr = new Uint8Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) byteArr[i]=byteChars.charCodeAt(i);
+    const blob = new Blob([byteArr],{type:'application/zip'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=`${prefix}_${onum}.zip`; a.click();
+    URL.revokeObjectURL(url);
+    document.getElementById(loadingId).style.display='none';
+    document.getElementById(genAreaId).style.display='block';
+    // Salvar processo no Firestore após download bem-sucedido
+    if(window._procPayload) {
+      const tipoProc = window._procPayload.tipo;
+      await salvarProcesso(tipoProc, window._procPayload);
+      // Marcar como salvo para não mostrar modal ao sair
+      if(tipoProc === 'danfe') S.danfe.salvo = true; else S.nf.salvo = true;
+      window._procPayload = null;
+    }
+  } catch(err) {
+    clearTimeout(coldStartTimer);
+    document.getElementById(loadingId).style.display='none';
+    document.getElementById(genAreaId).style.display='block';
+    toast('Erro ao gerar Excel: '+err.message, 'err', 6000);
+    console.error(err);
+  }
+}
+
+// ---- DANFE Excel ----
+async function gerarExcelDanfe() {
+  if(S.danfe.chips.length!==2){toast('Selecione 2 concorrentes.', 'warn'); return;}
+  if(!S.danfe.itens.length){toast('Adicione itens de material.', 'warn'); return;}
+  const onum = getProxOnum();
+  window._procPayload = {
+    tipo: 'danfe',
+    nfnum: v('d-nfnum')||'S/N',
+    onum,
+    data: v('d-odata'),
+    nfdata: v('d-nfdata'),
+    odataC1: v('d-odata-c1'),
+    odataC2: v('d-odata-c2'),
+    chips: [...S.danfe.chips],
+    vencedora: S.danfe.vencedora || 'EGF',
+    itens: JSON.parse(JSON.stringify(S.danfe.itens)),
+    nfItens: null,
+    vars: S.danfe.vars ? JSON.parse(JSON.stringify(S.danfe.vars)) : null,
+    cliente: S.danfe.cliente ? JSON.parse(JSON.stringify(S.danfe.cliente)) : null,
+    clienteId: S.danfe.cliente?.id||null,
+    escola: S.danfe.cliente?.nome2||'Sem cliente',
+    total: S.danfe.itens.reduce((s,i)=>s+i.qtd*i.valorUnitario,0),
+  };
+  await _chamarApiExcel({
+    itens: S.danfe.itens,
+    cliente: S.danfe.cliente,
+    onum,
+    tipo: 'Material',
+    chips: S.danfe.chips,
+    vars: S.danfe.vars,
+    odata: v('d-odata'),
+    datasConc: [v('d-odata-c1'), v('d-odata-c2')],
+    vencedora: S.danfe.vencedora || 'EGF',
+  }, 'Orcamentos', onum, 'd-loading','d-gen-area','d-load-msg');
+}
+
+// ---- NF Serviço Excel ----
+async function gerarExcelNF() {
+  if(S.nf.chips.length!==2){toast('Selecione 2 concorrentes.', 'warn'); return;}
+  if(!S.nf.itens.length){toast('Adicione itens de serviço.', 'warn'); return;}
+  const onum = getProxOnum();
+  const itensNF = S.nf.itens.map(it=>({
+    codigo: it.codigo || egfCod(),
+    produto: it.descricao||it.produto||'',
+    qtd: it.qtd||1,
+    unidade: it.unidade||'serviço',
+    valorUnitario: it.valorUnitario||0,
+    valorTotal: it.valorTotal||0,
+  }));
+  window._procPayload = {
+    tipo: 'nfserv',
+    nfnum: v('n-nfnum')||'S/N',
+    onum,
+    data: v('n-odata'),
+    nfdata: v('n-nfdata'),
+    chips: [...S.nf.chips],
+    vencedora: S.nf.vencedora || 'EGF',
+    itens: null,
+    nfItens: JSON.parse(JSON.stringify(itensNF)),
+    vars: S.nf.vars ? JSON.parse(JSON.stringify(S.nf.vars)) : null,
+    cliente: S.nf.cliente ? JSON.parse(JSON.stringify(S.nf.cliente)) : null,
+    clienteId: S.nf.cliente?.id||null,
+    escola: S.nf.cliente?.nome2||'Sem cliente',
+    total: itensNF.reduce((s,i)=>s+i.qtd*(parseFloat(i.valorUnitario)||0),0),
+  };
+  await _chamarApiExcel({
+    itens: itensNF,
+    cliente: S.nf.cliente,
+    onum,
+    tipo: 'Mão de obra',
+    chips: S.nf.chips,
+    vars: S.nf.vars,
+    odata: v('n-odata'),
+    datasConc: [v('n-odata-c1'), v('n-odata-c2')],
+    vencedora: S.nf.vencedora || 'EGF',
+  }, 'NF_Orcamentos', onum, 'n-loading','n-gen-area','n-load-msg');
+}
+
+// initApp() é chamado pelo Firebase via DOMContentLoaded
+
+// ================================================================
+// BACKUP JSON
+// ================================================================
+async function exportarBackup() {
+  const status = document.getElementById('backup-status');
+  status.textContent = 'Coletando dados...';
+  try {
+    const backup = {
+      versao: '1.0',
+      exportadoEm: new Date().toISOString(),
+      processos: S.processos,
+      clientes: S.clientes,
+      materiais: Object.values(S.materiais),
+      cfg: S.cfg,
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const data = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `engefal_backup_${data}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    status.style.color = 'var(--grn)';
+    status.textContent = `✓ Backup exportado — ${S.processos.length} processos, ${S.clientes.length} clientes, ${Object.keys(S.materiais).length} materiais.`;
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = 'Erro ao exportar: ' + e.message;
+  }
+}
+
+async function importarBackup(inp) {
+  const file = inp.files[0];
+  if(!file) return;
+  const status = document.getElementById('backup-status');
+  status.style.color = 'var(--mut)';
+  status.textContent = 'Lendo arquivo...';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if(!backup.versao || !backup.processos) throw new Error('Arquivo inválido ou corrompido.');
+
+      const confirm1 = confirm(
+        `Importar backup de ${backup.exportadoEm?.split('T')[0] || '?'}?
+
+` +
+        `• ${backup.processos?.length || 0} processos
+` +
+        `• ${backup.clientes?.length || 0} clientes
+` +
+        `• ${backup.materiais?.length || 0} materiais
+
+` +
+        `ATENÇÃO: Os dados atuais serão substituídos.`
+      );
+      if(!confirm1) { status.textContent = 'Importação cancelada.'; return; }
+
+      status.textContent = 'Importando processos...';
+      if(backup.processos?.length) {
+        for(const p of backup.processos) {
+          await FS.salvarProc(p);
+        }
+        S.processos = backup.processos;
+      }
+
+      status.textContent = 'Importando clientes...';
+      if(backup.clientes?.length) {
+        for(const c of backup.clientes) {
+          await FS.salvarCliente(c);
+        }
+        S.clientes = backup.clientes;
+      }
+
+      status.textContent = 'Importando materiais...';
+      if(backup.materiais?.length) {
+        for(const m of backup.materiais) {
+          await FS.salvarMaterial(m);
+          S.materiais[m.codigo] = m;
+        }
+      }
+
+      if(backup.cfg) {
+        await FS.salvarCfg(backup.cfg);
+        S.cfg = backup.cfg;
+        loadCfg();
+      }
+
+      renderProc(); renderCliPage(); sb();
+      status.style.color = 'var(--grn)';
+      status.textContent = `✓ Backup importado com sucesso — ${backup.processos?.length || 0} processos, ${backup.clientes?.length || 0} clientes.`;
+      inp.value = '';
+    } catch(err) {
+      status.style.color = 'var(--red)';
+      status.textContent = 'Erro ao importar: ' + err.message;
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ================================================================
+// DOCUMENTOS DA EMPRESA GANHADORA
+// ================================================================
+function abrirDocumentosEmpresa(prefix) {
+  const cnpj = (S.cfg.cnpj || '47.445.303/0001-81').replace(/[^0-9]/g,'');
+  const links = [
+    {label:'FDC — Prefeitura SP', url:'https://ccm.prefeitura.sp.gov.br/login/contribuinte?tipo=F'},
+    {label:'Cartão CNPJ — Receita Federal', url:`https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj=${cnpj}`},
+    {label:'Simples Nacional — Receita Federal', url:'https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=21'},
+  ];
+  // Mostrar modal com links para o usuário clicar individualmente
+  const body = `
+    <p style="font-size:12px;color:var(--mut);margin-bottom:16px;font-family:var(--mono)">Clique em cada link para abrir em nova aba:</p>
+    ${links.map(l=>`
+      <a href="${l.url}" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--bor);border-radius:6px;margin-bottom:8px;text-decoration:none;color:var(--txt);background:#fff;font-size:13px;font-weight:600;transition:border-color .12s"
+         onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--bor)'">
+        <span style="font-size:18px">🔗</span>
+        <span>${l.label}</span>
+        <span style="margin-left:auto;font-size:10px;color:var(--mut);font-family:var(--mono)">↗</span>
+      </a>`).join('')}
+  `;
+  document.getElementById('proc-modal-title').textContent = '📄 Documentos da empresa';
+  document.getElementById('proc-modal-body').innerHTML = DOMPurify.sanitize(body);
+  openOv('ov-proc');
+}
+
+
+</script>
+
+<script>
+// ================================================================
+// TOAST — substitui alert() nativo
+// ================================================================
+function toast(msg, tipo='info', duracao=4000) {
+  const c = document.getElementById('toast-container');
+  if(!c) { alert(msg); return; }
+  const t = document.createElement('div');
+  t.className = `toast ${tipo}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, duracao);
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const erro = document.getElementById('login-erro');
+  const btn = document.getElementById('login-btn');
+  erro.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  try {
+    await window.AUTH.login(email, senha);
+  } catch(e) {
+    erro.textContent = 'E-mail ou senha incorretos.';
+    erro.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+async function fazerLogout() {
+  await window.AUTH.logout();
+}
+</script>
+
+</div><!-- fecha app-root -->
+</body>
+</html>
