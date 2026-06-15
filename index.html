@@ -945,39 +945,6 @@ const CONC = {
   },
 };
 
-const CLIENTES_BASE = [
-  {id:1,nome:"Presidente da Diretoria Executiva da APM da EMEF Gilberto Dupas",nome2:"EMEF Gilberto Dupas",contato:"Gabriela",cnpj:"61.192.340/0001-56",end:"Avenida Deputado Emilio Carlos, 3871",tel:"(11) 3983-1621",email:"emefgdupas@sme.prefeitura.sp.gov.br",ativo:false},
-  {id:2,nome:"Presidente da Diretoria Executiva da APM da EMEF Tenente Aviador",nome2:"EMEF Tenente Aviador",contato:"Jairo",cnpj:"00.046.490/2598-26",end:"Av. General Penha Brasil, 139 - Vila Angelica",tel:"(11) 3851-5820",email:"emeffgsantos@sme.prefeitura.sp.gov.br",ativo:false},
-  {id:3,nome:"Condomínio Myrna",nome2:"Condomínio Myrna",contato:"Myrna",cnpj:"",end:"Av. André Luis, 784 - Piçanha - Guarulhos",tel:"(11) 9602-1284",email:"myrna.condominio@gmail.com",ativo:false},
-  {id:4,nome:"Presidente da Diretoria Executiva da APM da EMEF Marcílio Dias",nome2:"EMEF Marcílio Dias",contato:"Silvia",cnpj:"53.500.963/0001-10",end:"R. Ribeiro Junqueira, 259 - Vila Roque",tel:"(11) 3984-6967",email:"emefmdias@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:5,nome:"Presidente da Diretoria Executiva da APM da EMEF Osvaldo Querino",nome2:"EMEF Osvaldo Querino",contato:"Solange",cnpj:"56.575.814/0001-09",end:"R. Camilo Peçanha, 10",tel:"(11) 3851-5329",email:"emefoqsimoes@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:6,nome:"Presidente da Diretoria Executiva da APM da EMEF Prof. Primo Pascoli Melare",nome2:"EMEF Primo Pascoli",contato:"Levi",cnpj:"04.534.760/0001-30",end:"Avenida Inajar de Souza, 6975",tel:"(11) 3982-8396",email:"emefprimopascoli@ig.com.br",ativo:false},
-  {id:7,nome:"Presidente da Diretoria Executiva da APM da EMEF Comandante Garcia D'Avila",nome2:"EMEF Garcia D'Villa",contato:"Roberto",cnpj:"51.170.199/0001-37",end:"R. Armando Coelho Silva, 859",tel:"(11) 2239-1667",email:"emefgdavila@sme.prefeitura.sp.gov.br",ativo:false},
-  {id:8,nome:"Presidente da Diretoria Executiva da APM do Cieja Professora Rose Mary Frasson",nome2:"CIEJA Rose Mary Frasson",contato:"Michele",cnpj:"14.004.191/0001-86",end:"R. Jitauna, 30 - Maracana",tel:"(11) 2953-0525",email:"michele.olim@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:9,nome:"Presidente da Diretoria Executiva da APM da EMEF Senador Teotônio Vilela",nome2:"EMEF Teotônio Vilela",contato:"Ioneide",cnpj:"59.830.984/0001-80",end:"R. Daniel Cerri, 1549",tel:"(11) 2941-7291",email:"emefceudapaz@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:10,nome:"Presidente da Diretoria Executiva da APM da EMEF Dona Angelina MaffeiVita",nome2:"EMEF Angelina MaffeiVit",contato:"Vinicius",cnpj:"52.031.382/0001-14",end:"R. Zilda, 193",tel:"(11) 3857-9122",email:"emefamvita@sme.prefeitura.sp.gov.br",ativo:false},
-  {id:11,nome:"Presidente da Diretoria Executiva da APM da EMEF Antonio Prudente",nome2:"EMEF Antonio Prudente",contato:"Ana",cnpj:"52.566.403/0001-04",end:"Rua Manuel Inacio Alvarenga, 50",tel:"(11) 3851-5722",email:"emefaprudente@prefeitura.sp.gov.br",ativo:false},
-  {id:12,nome:"Presidente da Diretoria Executiva da APM da EMEI Marechal Odilio Denys",nome2:"EMEI Marechal Odilio Denys",contato:"Ana",cnpj:"96.294.186/0001-08",end:"R. Porteira do Pinhal, 206",tel:"(11) 3984-9375",email:"",ativo:false},
-  {id:13,nome:"Presidente da Diretoria Executiva da APM da Cei Guilherme Henrique Pinto Coelho",nome2:"CEI Guilherme Henrique",contato:"Mayra",cnpj:"08.386.176/0001-35",end:"Rua Dos Pioneiros, 26",tel:"(11) 2255-6607",email:"ceighpcoelho@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:14,nome:"Presidente da Diretoria Executiva da APM da EMEF Maria Helena Faria Lima",nome2:"EMEF Maria Helena",contato:"Orminda",cnpj:"52.635.935/0001-48",end:"Av. Roland Garros, S/N",tel:"(11) 99319-7695",email:"emefmhflima@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:15,nome:"Presidente da Diretoria Executiva da APM da EMEF Caira Alayde",nome2:"EMEF Caira Alayde",contato:"Lucimara",cnpj:"10.826.604/0001-45",end:"R. Xavier da Silva Ferrao, 317",tel:"(11) 3979-7980",email:"emefcairaaamedea@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:16,nome:"Presidente da Diretoria Executiva da APM da EMEF Theo Dutra",nome2:"EMEF Theo Dutra",contato:"Ana",cnpj:"53.177.929/0001-57",end:"Av. Guilherme de Almeida, 110",tel:"(11) 3851-8820",email:"",ativo:false},
-  {id:17,nome:"Presidente da Diretoria Executiva da APM da EMEF Zilka Salaberry de Carvalho",nome2:"EMEF Zilka Salaberry",contato:"Roberta",cnpj:"03.559.254/0001-32",end:"R. Antônio da Franca e Horta, 35",tel:"(11) 2235-5657",email:"emefzscarvalho@sme.prefeitura.sp.gov.br",ativo:false},
-  {id:18,nome:"Presidente da Diretoria Executiva da APM da EMEF Gov. Lucas Nogueira Garcez",nome2:"EMEI Lucas Nogueira",contato:"Milene",cnpj:"52.805.645/0001-03",end:"Rua Jose da Costa Gaviao, 140",tel:"(11) 3851-2560",email:"",ativo:false},
-  {id:19,nome:"Centro de Assistencia Social de Vila Dionisia",nome2:"CEI Santo Expedito",contato:"Rita",cnpj:"48.902.381/0001-20",end:"Rua Vinte e Dois de Agosto, 263",tel:"(11) 4580-0006",email:"",ativo:true},
-  {id:20,nome:"Condomínio Dona Edélia",nome2:"Condomínio Irmã Ana Dutra",contato:"Carolina",cnpj:"",end:"R. Otavio Nebias, 20",tel:"(11) 97417-0250",email:"",ativo:false},
-  {id:21,nome:"Presidente da Diretoria Executiva da APM do Cei Jardim Primavera I",nome2:"CEI Jardim Primavera",contato:"Isis",cnpj:"07.930.882/0001-33",end:"R. Crisólia, 526 - Jardim Primavera",tel:"(11) 3936-2923",email:"",ativo:true},
-  {id:22,nome:"Presidente da Diretoria Executiva da APM do Cei Vereador João Toniolo",nome2:"CEI João Toniolo",contato:"Janaina",cnpj:"07.925.372/0001-78",end:"R. Padre Feliciano Domingues, 180 - Jardim Mariliza",tel:"(11) 3975-9024",email:"",ativo:true},
-  {id:23,nome:"Presidente da Diretoria Executiva da APM do Cei Jardim Peri",nome2:"CEI Jardim Peri",contato:"Leticia",cnpj:"07.811.832/0001-37",end:"R. Afonso Lopes Vieira, 57",tel:"(11) 3851-7646",email:"ceijperi@prefeitura.sp.gov.br",ativo:true},
-  {id:24,nome:"Presidente da Diretoria Executiva da APM do EMEI Antonio Callado",nome2:"EMEI Antonio Callado",contato:"Glaucia",cnpj:"02.547.200/0001-94",end:"Rua Araguacema, 100 - Bairro do limão",tel:"(11) 3955-1199",email:"emeiacallado@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:25,nome:"Presidente da Diretoria Executiva da APM da Emef Embaixador Raul Fernandes",nome2:"EMEF Raul Fernandes",contato:"Leticia",cnpj:"71.588.370/0001-30",end:"R. Nair Ramos Shuring, 158",tel:"(11) 3921-1033",email:"emefraulfernandes@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:26,nome:"Presidente da Diretoria Executiva da APM da EMEB Prof. Elza de Lourdes Segre",nome2:"EMEB Prof. Elza de Lourdes Segre",contato:"Sandra",cnpj:"",end:"Rua São Luíz, 81 - Chácara Hungara, Diadema - SP",tel:"(11) 4051-1307",email:"",ativo:false},
-  {id:27,nome:"Presidente da Diretoria Executiva da APM da EMEI Professor Arlindo Veiga dos Santos",nome2:"EMEI Professor Arlindo Veiga",contato:"Beth",cnpj:"59.398.214/0001-00",end:"Av. Félix Alves Pereira, 9 - Jardim Centenario",tel:"(11) 3984-9879",email:"emeiavsantos@sme.prefeitura.sp.gov.br",ativo:true},
-  {id:28,nome:"Presidente da Diretoria Executiva da APM da EMEF Arthur Guimarães",nome2:"EMEF Arthur Guimarães",contato:"Ana",cnpj:"59.984.172/0001-90",end:"R. Jaguaribe, 354 - Vila Buarque, São Paulo - SP",tel:"(11) 3331-5338",email:"",ativo:false},
-  {id:29,nome:"Presidente da Diretoria Executiva da APM da CEMEI Jardim Tremembé",nome2:"CEMEI Jardim Tremembé",contato:"Sonia",cnpj:"42.638.602/0001-19",end:"R. Baquio Preto, 113 - Parque Casa de Pedra, São Paulo - SP",tel:"(11) 91734-5198",email:"",ativo:true},
-  {id:30,nome:"Presidente da Diretoria Executiva da APM da EMEI Paulo VI",nome2:"EMEI Paulo VI",contato:"João",cnpj:"50.861.400/0001-60",end:"Rua Carlo Perinello, S/N - Vila Mangalot, São Paulo - SP",tel:"(11) 3904-0555",email:"",ativo:true},
-  {id:31,nome:"Presidente da Diretoria Executiva da APM da CEI Wilson Jose Abdalla",nome2:"CEI Wilson Jose",contato:"Marta",cnpj:"07.203.563/0001-26",end:"R. Neves de Carvalho, 850 - Bom Retiro, São Paulo - SP",tel:"(11) 3222-2109",email:"",ativo:true},
-];
 
 // STATE
 let S = {
@@ -1052,19 +1019,8 @@ async function initApp() {
       mats.forEach(m => { S.materiais[m.codigo] = m; });
     }
 
-    // Re-seed clientes se base local tem mais que o Firestore
-    if(clientes.length < CLIENTES_BASE.length) {
-      await Promise.all(CLIENTES_BASE.map(c => FS.salvarCliente(c)));
-      S.clientes = [...CLIENTES_BASE];
-    }
-
-    // Clientes: usar base se Firestore vazio
-    S.clientes = clientes.length ? clientes : [...CLIENTES_BASE];
-
-    // Se base estava vazia e usou CLIENTES_BASE, salvar no Firestore
-    if(!clientes.length) {
-      await Promise.all(CLIENTES_BASE.map(c => FS.salvarCliente(c)));
-    }
+    // Clientes: usar o que veio do Firestore
+    S.clientes = clientes;
 
     S.processos = processos;
     if(cfg) { S.cfg = cfg; loadCfg(); }
@@ -1074,7 +1030,7 @@ async function initApp() {
 
   } catch(err) {
     console.warn('Firestore indisponível, usando localStorage:', err);
-    try { S.clientes = JSON.parse(localStorage.getItem('egf_cli')||'null') || [...CLIENTES_BASE]; } catch(e){ S.clientes=[...CLIENTES_BASE]; }
+    try { S.clientes = JSON.parse(localStorage.getItem('egf_cli')||'null') || []; } catch(e){ S.clientes=[]; }
     try { S.processos = JSON.parse(localStorage.getItem('egf_proc')||'[]'); } catch(e){ S.processos=[]; }
     try { const scfg = localStorage.getItem('egf_cfg'); if(scfg){ S.cfg=JSON.parse(scfg); loadCfg(); } } catch(e){}
   }
