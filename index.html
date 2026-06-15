@@ -190,6 +190,9 @@ tr:hover td{background:var(--sur2)}
     async deletarCliente(id) {
       await deleteDoc(doc(db, 'clientes', String(id)));
     },
+    async deletarMaterial(codigo) {
+      await deleteDoc(doc(db, 'materiais', String(codigo)));
+    },
     async carregarClientes() {
       const snap = await getDocs(collection(db, 'clientes'));
       return snap.docs.map(d => d.data());
@@ -2227,8 +2230,7 @@ async function confirmarDelMaterial() {
   if(!codigo) return;
   delete S.materiais[codigo];
   try {
-    const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
-    await deleteDoc(doc(db, 'materiais', String(codigo)));
+    await FS.deletarMaterial(codigo);
     toast('Material excluído.', 'ok');
   } catch(e) { toast('Erro ao excluir: ' + e.message, 'err'); }
   renderMatPage(document.getElementById('mat-busca')?.value || '');
