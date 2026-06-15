@@ -288,6 +288,7 @@ tr:hover td{background:var(--sur2)}
     <button class="tb" onclick="goSec('nfserv',this)">NF Serviço</button>
     <button class="tb" onclick="goSec('processos',this)">Processos</button>
     <button class="tb" onclick="goSec('clientes',this)">Clientes</button>
+    <button class="tb" onclick="goSec('materiais',this)">Materiais</button>
     <button class="tb" onclick="goSec('cfg',this)">Config</button>
   </div>
   <div id="logout-btn" style="display:none;align-items:center;gap:10px;margin-left:auto;padding-right:12px">
@@ -703,6 +704,55 @@ tr:hover td{background:var(--sur2)}
     </div></div>
   </div>
 </div>
+
+<!-- ========== MATERIAIS ========== -->
+<div class="sec" id="sec-materiais">
+  <div class="card">
+    <div class="ch"><div class="ct">Materiais</div>
+      <div class="flex gap8 ac">
+        <input type="text" placeholder="Buscar por código, descrição..." style="width:260px" oninput="filtrarMat(this.value)" id="mat-busca">
+        <button class="btn bo bsm" onclick="openNovoMaterial()">+ Novo</button>
+      </div>
+    </div>
+    <div class="cb" style="padding:0"><div class="tw">
+      <table><thead><tr><th>Código</th><th>Descrição</th><th>Unidade</th><th>NCM</th><th>Valor Unit.</th><th></th></tr></thead>
+      <tbody id="mat-tbody"></tbody></table>
+    </div></div>
+  </div>
+</div>
+
+<!-- Modal novo/editar material -->
+<div class="ov" id="ov-mat"><div class="modal" style="max-width:500px">
+  <div class="mhd"><div class="mtitle" id="mat-modal-title">Novo material</div><button class="xbtn" onclick="closeOv('ov-mat')">✕</button></div>
+  <div class="cb">
+    <div class="g2 mb12">
+      <div class="field"><label>Código</label><input id="mat-codigo" placeholder="001"></div>
+      <div class="field"><label>Unidade</label><input id="mat-unidade" placeholder="Unid"></div>
+    </div>
+    <div class="field mb12"><label>Descrição</label><input id="mat-produto" placeholder="Nome do material"></div>
+    <div class="g2 mb12">
+      <div class="field"><label>NCM</label><input id="mat-ncm" placeholder="00000000"></div>
+      <div class="field"><label>Valor Unitário (R$)</label><input id="mat-valor" type="number" step="0.01" min="0" placeholder="0,00"></div>
+    </div>
+  </div>
+  <div class="mft" style="display:flex;justify-content:space-between;align-items:center">
+    <button class="btn br bsm" id="mat-del-btn" style="display:none" onclick="deletarMaterial()">Excluir</button>
+    <div class="flex gap8" style="margin-left:auto">
+      <button class="btn bo" onclick="closeOv('ov-mat')">Cancelar</button>
+      <button class="btn bd" onclick="salvarMaterial()">Salvar</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- Modal confirmar exclusão de material -->
+<div class="ov" id="ov-confirma-del-mat"><div class="modal" style="max-width:400px">
+  <div class="mhd"><div class="mtitle">🗑️ Excluir material</div></div>
+  <p style="font-size:13px;margin-bottom:20px;color:var(--mut);font-family:var(--mono)">Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.</p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn br" onclick="closeOv('ov-confirma-del-mat')">Cancelar</button>
+    <button class="btn" style="background:var(--red);color:#fff" onclick="confirmarDelMaterial()">Excluir</button>
+  </div>
+</div></div>
 
 <!-- ========== CONFIG ========== -->
 <div class="sec" id="sec-cfg">
@@ -1222,6 +1272,7 @@ function _goSecDireto(id, btn) {
   document.getElementById('sec-'+id).classList.add('on');
   document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
   if(btn) btn.classList.add('on');
+  if(id==='materiais') renderMatPage();
 }
 
 function setupDrop(dzId, inpId, fn) {
@@ -2183,6 +2234,103 @@ function renderCliPage(filtro='') {
 }
 
 function filtrarCli(q) { renderCliPage(q); }
+
+// ================================================================
+// MATERIAIS — gestão
+// ================================================================
+let _matEditCodigo = null;
+
+function renderMatPage(filtro='') {
+  const tbody = document.getElementById('mat-tbody');
+  if(!tbody) return;
+  let lista = Object.values(S.materiais);
+  lista.sort((a,b) => String(a.codigo).localeCompare(String(b.codigo)));
+  if(filtro) {
+    const q = filtro.toLowerCase();
+    lista = lista.filter(m =>
+      (m.codigo||'').toLowerCase().includes(q) ||
+      (m.produto||'').toLowerCase().includes(q)
+    );
+  }
+  if(!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut)">Nenhum material cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(m => `<tr>
+    <td><span class="tag ty">${esc(m.codigo)}</span></td>
+    <td style="font-size:12px">${esc(m.produto||'')}</td>
+    <td class="mut">${esc(m.unidade||'')}</td>
+    <td class="mono mut" style="font-size:11px">${esc(m.ncm||'')}</td>
+    <td class="mono">R$ ${fR(m.valorUnitario||0)}</td>
+    <td><button class="btn bo bsm btn-editar-mat" data-cod="${esc(String(m.codigo))}">Editar</button></td>
+  </tr>`).join('');
+  tbody.querySelectorAll('.btn-editar-mat').forEach(btn => {
+    btn.addEventListener('click', () => openEditarMaterial(btn.dataset.cod));
+  });
+}
+
+function filtrarMat(q) { renderMatPage(q); }
+
+function openNovoMaterial() {
+  _matEditCodigo = null;
+  document.getElementById('mat-modal-title').textContent = 'Novo material';
+  document.getElementById('mat-codigo').value = '';
+  document.getElementById('mat-produto').value = '';
+  document.getElementById('mat-unidade').value = '';
+  document.getElementById('mat-ncm').value = '';
+  document.getElementById('mat-valor').value = '';
+  document.getElementById('mat-codigo').disabled = false;
+  document.getElementById('mat-del-btn').style.display = 'none';
+  openOv('ov-mat');
+}
+
+function openEditarMaterial(codigo) {
+  const m = S.materiais[codigo] || S.materiais[String(codigo).padStart(3,'0')];
+  if(!m) return;
+  _matEditCodigo = m.codigo;
+  document.getElementById('mat-modal-title').textContent = 'Editar material';
+  document.getElementById('mat-codigo').value = m.codigo;
+  document.getElementById('mat-produto').value = m.produto||'';
+  document.getElementById('mat-unidade').value = m.unidade||'';
+  document.getElementById('mat-ncm').value = m.ncm||'';
+  document.getElementById('mat-valor').value = m.valorUnitario||'';
+  document.getElementById('mat-codigo').disabled = true;
+  document.getElementById('mat-del-btn').style.display = 'inline-flex';
+  openOv('ov-mat');
+}
+
+async function salvarMaterial() {
+  const codigo = document.getElementById('mat-codigo').value.trim();
+  const produto = document.getElementById('mat-produto').value.trim();
+  const unidade = document.getElementById('mat-unidade').value.trim();
+  const ncm = document.getElementById('mat-ncm').value.trim();
+  const valorUnitario = parseFloat(document.getElementById('mat-valor').value) || 0;
+  if(!codigo || !produto) { toast('Código e descrição são obrigatórios.', 'err'); return; }
+  const m = { codigo, produto, unidade, ncm, valorUnitario };
+  S.materiais[codigo] = m;
+  try { await FS.salvarMaterial(m); toast('Material salvo!', 'ok'); }
+  catch(e) { toast('Erro ao salvar: ' + e.message, 'err'); }
+  closeOv('ov-mat');
+  renderMatPage(document.getElementById('mat-busca')?.value || '');
+}
+
+function deletarMaterial() {
+  closeOv('ov-mat');
+  openOv('ov-confirma-del-mat');
+}
+
+async function confirmarDelMaterial() {
+  const codigo = _matEditCodigo;
+  closeOv('ov-confirma-del-mat');
+  if(!codigo) return;
+  delete S.materiais[codigo];
+  try {
+    const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+    await deleteDoc(doc(db, 'materiais', String(codigo)));
+    toast('Material excluído.', 'ok');
+  } catch(e) { toast('Erro ao excluir: ' + e.message, 'err'); }
+  renderMatPage(document.getElementById('mat-busca')?.value || '');
+}
 
 function openCliModal(target) {
   S.cliTarget=target;
