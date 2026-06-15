@@ -2080,7 +2080,7 @@ async function baixarExcelProc(id) {
   const btn = document.querySelector('#proc-modal-body .btn.bg');
   if(btn){ btn.disabled=true; btn.textContent='Gerando...'; }
   try {
-    const resp = await fetch('https://engefal-excel-api.onrender.com/excel', {
+    const resp = await fetch('https://orcamentos-jb-api.onrender.com/excel', {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
@@ -2548,7 +2548,7 @@ async function _chamarApiExcel(payload, prefix, onum, loadingId, genAreaId, load
   }, 6000);
 
   try {
-    const resp = await fetch('https://engefal-excel-api.onrender.com/excel', {
+    const resp = await fetch('https://orcamentos-jb-api.onrender.com/excel', {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
