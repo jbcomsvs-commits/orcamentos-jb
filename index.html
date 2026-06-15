@@ -873,52 +873,6 @@ tr:hover td{background:var(--sur2)}
 // ================================================================
 // DADOS BASE
 // ================================================================
-const BASE_MAT = {
-"001":{p:"LAMPADA LED TUBULAR T8 120CM 18W 6500K",u:"Unid",n:"85391010",v:22.10},
-"002":{p:"ARGAMASSA 20K INT AC-1 CINZA QUARTZOLIT",u:"SC",n:"32149000",v:19.50},
-"005":{p:"TINTA LATEX ACRÍLICO 18 LTS BRANCO",u:"LA",n:"32091010",v:336.70},
-"009":{p:"MASSA CORRIDA PVA 25KG",u:"LA",n:"32141020",v:119.60},
-"014":{p:"SACO DE CIMENTO 50KG",u:"SC",n:"25232910",v:48.75},
-"015":{p:"SACO DE AREIA 20KG",u:"SC",n:"25051000",v:7.88},
-"016":{p:'TUBO HIDRÁULICO 6M 3"',u:"TB",n:"39172300",v:130.00},
-"019":{p:"COLA PVC",u:"Unid",n:"35061090",v:19.99},
-"020":{p:"SACOS DE ENTULHO",u:"Unid",n:"63053310",v:1.95},
-"021":{p:"TIJOLO COMUM DE BARRO",u:"Unid",n:"69049000",v:3.87},
-"022":{p:"CALHA AGUA PLUVIAL C/ CORTE",u:"Ml",n:"73069000",v:45.50},
-"025":{p:"SELANTE PU 40 PARA VEDAÇÃO",u:"Unid",n:"35061090",v:45.50},
-"035":{p:"CABO ATOX 2,5MM PRETO 750V ROLO 100M",u:"Rl",n:"85365090",v:296.40},
-"037":{p:"DISJUNTOR BIPOLAR 40A MINI 3KA",u:"Unid",n:"85362000",v:63.70},
-"040":{p:"SIFÃO UNIVERSAL PVC",u:"UN",n:"39174090",v:37.70},
-"041":{p:"ASSENTO SANITÁRIO UNIVERSAL BRANCO",u:"PC",n:"39222000",v:42.81},
-"046":{p:"CONJUNTO TOMADA 1 MODULO 10A",u:"PC",n:"85366910",v:13.00},
-"057":{p:"VEDACIT SELANTE ACR P/TRINCA 550GR",u:"PC",n:"32141010",v:29.05},
-"058":{p:"SILICONE ACÉTICO 280GR BRANCO",u:"PC",n:"35061090",v:23.27},
-"065":{p:"VÁLVULA DESCARGA HYDRA COMPLETA",u:"Unid",n:"84819010",v:332.80},
-"066":{p:"TORNEIRA AUTOMÁTICA METAL P/ BANHEIRO",u:"Unid",n:"84818019",v:221.00},
-"067":{p:"REPARO VÁLVULA HYDRA",u:"Unid",n:"84819010",v:65.00},
-"068":{p:"VIDRO COMUM 180 X 920",u:"Unid",n:"70071900",v:45.50},
-"072":{p:"VENTILADOR VENTISILVA 65CM BIVOLT PRETO",u:"Unid",n:"84145990",v:806.00},
-"074":{p:"PLACA STANDARD DRYWALL 1,8M X 12,5MM",u:"Unid",n:"68091100",v:54.60},
-"085":{p:"TINTA EUCATEX PISO 18 LT CONCRETO",u:"LT",n:"32091010",v:291.75},
-"086":{p:"FECHADURA PORTA DE AÇO EXTERNA",u:"Unid",n:"83014000",v:97.50},
-"091":{p:"SACO DE PEDRA 20KG",u:"Unid",n:"25171000",v:6.83},
-"105":{p:"REFLETOR LED 200W 6500K PRETO",u:"Unid",n:"94054900",v:156.00},
-"108":{p:"TUBO RETO GALVANIZADO 30X20X1,25MM 6M",u:"Unid",n:"73066100",v:143.00},
-"171":{p:"GRELHA ACO INOX CLARIN.C/CAX.RED.10",u:"Unid",n:"73259910",v:10.57},
-"231":{p:"MASSA CORRIDA PVA BRANCA 3,6L",u:"Unid",n:"3209.10.10",v:39.00},
-"254":{p:"ACABAMENTO VÁLVULA HYDRA",u:"Unid",n:"84819010",v:71.50},
-"285":{p:"VIDRO COMUM INCOLOR 4MM",u:"Unid",n:"70071900",v:54.60},
-"292":{p:"PARAFUSO VASO E MICTÓRIO C/ BUCHA CROMADO",u:"Unid",n:"73181400",v:12.87},
-"295":{p:"REPARO VEDANTE P/ TORNEIRA",u:"Unid",n:"84819010",v:6.50},
-"326":{p:"VÁLVULA MICTÓRIO C/ TEMPORIZADOR",u:"Unid",n:"84818019",v:221.00},
-"327":{p:"SPUD PLÁSTICO SANFONADO",u:"Unid",n:"39174090",v:7.51},
-"349":{p:"VERGALHÃO DE AÇO 5/16 12M",u:"br",n:"72142000",v:88.40},
-"356":{p:"FIXADOR DE PORTA DE PISO",u:"Unid",n:"83025000",v:41.60},
-"391":{p:"BIANCO 3,6L",u:"BD",n:"35069120",v:130.00},
-"807":{p:"BARRA APOIO AÇO INOXIDÁVEL P/ BANHEIRO",u:"Unid",n:"73249000",v:156.00},
-"808":{p:"BANCADA 2210X610MM INOX 304 CHAPA #20 COM CUBA",u:"Und",n:"73239300",v:2470.00},
-"815":{p:"TINTA ACRÍLICA NOVACOR EXTRA RENDIMENTO FOSCO VERDE ITACARE",u:"Lt",n:"32091010",v:520.00},
-};
 
 const CONC = {
   EGF:{
@@ -1096,14 +1050,6 @@ async function initApp() {
     // Popular cache de materiais
     if(mats.length) {
       mats.forEach(m => { S.materiais[m.codigo] = m; });
-    } else {
-      // Seed inicial a partir do BASE_MAT
-      Object.entries(BASE_MAT).forEach(([cod, m]) => {
-        S.materiais[cod] = {codigo:cod, produto:m.p, unidade:m.u, ncm:m.n, valorUnitario:m.v};
-      });
-      await Promise.all(Object.entries(BASE_MAT).map(([cod, m]) =>
-        FS.salvarMaterial({codigo:cod, produto:m.p, unidade:m.u, ncm:m.n, valorUnitario:m.v})
-      ));
     }
 
     // Re-seed clientes se base local tem mais que o Firestore
