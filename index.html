@@ -2174,8 +2174,12 @@ function renderCliPage(filtro='') {
     <td class="mono">${esc(c.cnpj||'')}</td>
     <td>${esc(c.contato||'')}</td>
     <td>${c.ativo?'<span class="tag tg">Ativo</span>':'<span class="tag tm">Inativo</span>'}</td>
-    <td><button class="btn bo bsm" onclick="editCliente(${c.id})">Editar</button></td>
+    <td><button class="btn bo bsm btn-editar-cli" data-id="${esc(String(c.id))}">Editar</button></td>
   </tr>`).join('');
+  // Bind botões editar (DOMPurify remove onclick inline)
+  tbody.querySelectorAll('.btn-editar-cli').forEach(btn => {
+    btn.addEventListener('click', () => editCliente(btn.dataset.id));
+  });
 }
 
 function filtrarCli(q) { renderCliPage(q); }
