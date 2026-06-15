@@ -759,28 +759,6 @@ tr:hover td{background:var(--sur2)}
 
 <!-- ========== CONFIG ========== -->
 <div class="sec" id="sec-cfg">
-  <!-- Dados da Engefal -->
-  <div class="card" style="margin-bottom:14px"><div class="ch"><div class="ct">Dados da Engefal</div></div>
-    <div class="cb">
-      <div class="g2 mb12">
-        <div class="field"><label>Razão social</label><input id="cfg-razao" value="ENGEFAL EMPREITEIA E SERVIÇOS LTDA"></div>
-        <div class="field"><label>CNPJ</label><input id="cfg-cnpj" value="47.445.303/0001-81"></div>
-      </div>
-      <div class="g2 mb12">
-        <div class="field"><label>Endereço</label><input id="cfg-end" value="R. do Iverno, 258 - Jd. Guarani"></div>
-        <div class="field"><label>CEP</label><input id="cfg-cep" value="02848-050"></div>
-      </div>
-      <div class="g2 mb12">
-        <div class="field"><label>Contato 1 — nome</label><input id="cfg-c1n" value="Felipe Gomes"></div>
-        <div class="field"><label>Contato 1 — tel</label><input id="cfg-c1t" value="(11) 98151-8920"></div>
-      </div>
-      <div class="g2 mb12">
-        <div class="field"><label>Contato 2 — nome</label><input id="cfg-c2n" value="Leonardo Braulino"></div>
-        <div class="field"><label>Contato 2 — tel</label><input id="cfg-c2t" value="(11) 96928-6036"></div>
-      </div>
-      <button class="btn bd" onclick="saveCfg()">Salvar</button>
-    </div></div>
-
   <!-- Backup -->
   <div class="card">
     <div class="ch"><div class="ct">Backup de dados</div></div>
@@ -1070,19 +1048,11 @@ function preencherDatasConc() {
 }
 
 function loadCfg() {
-  const f = (id,v) => { const el=document.getElementById(id); if(el)el.value=v||''; };
-  f('cfg-razao',S.cfg.razao); f('cfg-cnpj',S.cfg.cnpj); f('cfg-end',S.cfg.end);
-  f('cfg-cep',S.cfg.cep); f('cfg-c1n',S.cfg.c1n); f('cfg-c1t',S.cfg.c1t);
-  f('cfg-c2n',S.cfg.c2n); f('cfg-c2t',S.cfg.c2t);
+  // campos de config da Engefal removidos
 }
 
 async function saveCfg() {
-  S.cfg = {
-    razao:v('cfg-razao'),cnpj:v('cfg-cnpj'),end:v('cfg-end'),cep:v('cfg-cep'),
-    c1n:v('cfg-c1n'),c1t:v('cfg-c1t'),c2n:v('cfg-c2n'),c2t:v('cfg-c2t')
-  };
-  try { await FS.salvarCfg(S.cfg); } catch(e){ localStorage.setItem('egf_cfg',JSON.stringify(S.cfg)); }
-  toast('✓ Salvo com sucesso!', 'ok');
+  // campos de config da Engefal removidos
 }
 
 function sb(msg) {
